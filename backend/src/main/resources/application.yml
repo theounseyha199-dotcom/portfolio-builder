@@ -20,6 +20,7 @@ server:
   port: ${SERVER_PORT:8081}
 app:
   github:
+    api-base-url: ${GITHUB_API_BASE_URL:https://api.github.com}
     client-id: ${GITHUB_CLIENT_ID:}
     client-secret: ${GITHUB_CLIENT_SECRET:}
     redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8081/api/integrations/github/callback}
