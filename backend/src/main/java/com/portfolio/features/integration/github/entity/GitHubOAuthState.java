@@ -1,0 +1,3 @@
+package com.portfolio.features.integration.github.entity;
+import com.portfolio.features.user.entity.AppUser; import jakarta.persistence.*; import java.time.*; import java.util.*; import lombok.*;
+@Entity @Table(name="github_oauth_states") @Getter @Setter @NoArgsConstructor public class GitHubOAuthState { @Id @GeneratedValue(strategy=GenerationType.UUID) private UUID id; @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="user_id") private AppUser user; private String stateHash; private LocalDateTime expiresAt,createdAt; private boolean used; @PrePersist void created(){createdAt=LocalDateTime.now();} }

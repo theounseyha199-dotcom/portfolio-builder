@@ -1,0 +1,1 @@
+package com.portfolio.features.integration.github.repository; import com.portfolio.features.integration.github.entity.GitHubConnection; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface GitHubConnectionRepository extends JpaRepository<GitHubConnection,UUID>{Optional<GitHubConnection> findByUserId(UUID userId);}

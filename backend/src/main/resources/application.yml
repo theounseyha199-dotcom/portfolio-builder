@@ -19,6 +19,11 @@ spring:
 server:
   port: ${SERVER_PORT:8081}
 app:
+  github:
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET:}
+    redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8081/api/integrations/github/callback}
+    frontend-url: ${FRONTEND_URL:http://localhost:3000}
   cors:
     allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}
   storage:

@@ -24,7 +24,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
   @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.csrf(csrf -> csrf.disable()).cors(cors -> {}).sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-      .authorizeHttpRequests(auth -> auth.requestMatchers("/api/public/**").permitAll().requestMatchers("/api/admin/**").hasRole("ADMIN").requestMatchers("/api/**").authenticated().anyRequest().denyAll())
+      .authorizeHttpRequests(auth -> auth.requestMatchers("/api/public/**","/api/integrations/github/callback").permitAll().requestMatchers("/api/admin/**").hasRole("ADMIN").requestMatchers("/api/**").authenticated().anyRequest().denyAll())
       .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))).build();
   }
   @Bean Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {

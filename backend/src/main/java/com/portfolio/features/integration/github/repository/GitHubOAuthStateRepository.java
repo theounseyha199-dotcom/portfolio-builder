@@ -1,0 +1,1 @@
+package com.portfolio.features.integration.github.repository; import com.portfolio.features.integration.github.entity.GitHubOAuthState; import java.util.*; import org.springframework.data.jpa.repository.JpaRepository; public interface GitHubOAuthStateRepository extends JpaRepository<GitHubOAuthState,UUID>{Optional<GitHubOAuthState> findByStateHash(String stateHash);}

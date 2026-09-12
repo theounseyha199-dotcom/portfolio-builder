@@ -97,3 +97,7 @@ For local development, set `STORAGE_TYPE=local`. Files are held below `STORAGE_L
 For production, do not rely on local container storage. Set `STORAGE_TYPE=s3` and configure `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_PUBLIC_BASE_URL`. `S3_ENDPOINT` is optional for AWS S3 and should be set for Cloudflare R2 or MinIO-compatible storage. `S3_PUBLIC_BASE_URL` must be a public CDN/bucket origin and contains no credentials.
 
 `APP_PUBLIC_BASE_URL` determines the public origin for local asset URLs (default: `http://localhost:8081`).
+
+## GitHub integration
+
+GitHub remains an optional project-import integration; users continue to authenticate with Keycloak. Create a GitHub OAuth App with homepage `http://localhost:3000` and callback `http://localhost:8081/api/integrations/github/callback`, then set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`, and `FRONTEND_URL`. The backend stores access tokens server-side only and requests the minimal `read:user` scope for account connection.

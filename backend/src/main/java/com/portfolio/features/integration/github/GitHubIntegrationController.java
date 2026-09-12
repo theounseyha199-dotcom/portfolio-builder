@@ -1,0 +1,10 @@
+package com.portfolio.features.integration.github;
+import com.portfolio.common.api.ApiResponse; import com.portfolio.features.user.service.UserService; import java.util.*; import lombok.*; import org.springframework.security.core.annotation.AuthenticationPrincipal; import org.springframework.security.oauth2.jwt.Jwt; import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/integrations/github") @RequiredArgsConstructor public class GitHubIntegrationController { private final GitHubIntegrationService service; private final UserService users;
+ @GetMapping("/connect") ApiResponse<Map<String,String>> connect(@AuthenticationPrincipal Jwt jwt){return ApiResponse.success("GitHub authorization URL generated.",Map.of("authorizationUrl",service.connect(users.synchronize(jwt))));}
+ @GetMapping("/status") ApiResponse<GitHubIntegrationService.Status> status(@AuthenticationPrincipal Jwt jwt){var s=service.status(users.synchronize(jwt));return ApiResponse.success(s.connected()?"GitHub connection retrieved.":"GitHub is not connected.",s);}
+ @GetMapping("/repositories") ApiResponse<GitHubIntegrationService.RepositoryPage> repositories(@AuthenticationPrincipal Jwt jwt,@RequestParam(defaultValue="1") int page,@RequestParam(defaultValue="20") int size){return ApiResponse.success("GitHub repositories retrieved successfully.",service.repositories(users.synchronize(jwt),page,size));}
+ @PostMapping("/import") ApiResponse<GitHubIntegrationService.ImportResult> importRepos(@AuthenticationPrincipal Jwt jwt,@RequestBody GitHubIntegrationService.ImportRequest request){return ApiResponse.success("GitHub repositories processed successfully.",service.importRepositories(users.synchronize(jwt),request.repositoryIds()));}
+ @DeleteMapping ApiResponse<Void> disconnect(@AuthenticationPrincipal Jwt jwt){service.disconnect(users.synchronize(jwt));return ApiResponse.success("GitHub disconnected.",null);}
+ @GetMapping("/callback") void callback(@RequestParam String code,@RequestParam String state,jakarta.servlet.http.HttpServletResponse response)throws java.io.IOException{response.sendRedirect(service.callback(code,state));}
+}
