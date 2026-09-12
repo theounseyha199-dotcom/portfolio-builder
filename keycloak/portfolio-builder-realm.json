@@ -1,0 +1,22 @@
+{
+  "realm": "portfolio-builder",
+  "enabled": true,
+  "displayName": "Portfolia",
+  "registrationAllowed": true,
+  "resetPasswordAllowed": true,
+  "verifyEmail": false,
+  "roles": { "realm": [{ "name": "USER" }, { "name": "ADMIN" }] },
+  "defaultRoles": ["USER"],
+  "clients": [{
+    "clientId": "portfolio-frontend",
+    "name": "Portfolio Builder Frontend",
+    "enabled": true,
+    "publicClient": true,
+    "standardFlowEnabled": true,
+    "directAccessGrantsEnabled": false,
+    "redirectUris": ["http://localhost:3000/*"],
+    "webOrigins": ["http://localhost:3000"],
+    "attributes": { "pkce.code.challenge.method": "S256" }
+  }]
+}
+

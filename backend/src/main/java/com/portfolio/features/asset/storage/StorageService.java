@@ -1,0 +1,1 @@
+package com.portfolio.features.asset.storage; import org.springframework.web.multipart.MultipartFile; public interface StorageService {StoredFile upload(MultipartFile file,String directory);void delete(String objectKey);String getPublicUrl(String objectKey);}

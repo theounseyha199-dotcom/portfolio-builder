@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@theme { --color-primary: #20419e; --color-surface: #f7f8fa; --color-ink: #111827; --color-muted: #667085; --font-sans: "Inter", Arial, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #fff; color: #111827; font-family: var(--font-sans); }
+button, input, textarea { font: inherit; }
+

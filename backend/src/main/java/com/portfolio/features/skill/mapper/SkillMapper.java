@@ -1,0 +1,1 @@
+package com.portfolio.features.skill.mapper; import com.portfolio.features.skill.dto.*; import com.portfolio.features.skill.entity.Skill; import org.mapstruct.Mapper; @Mapper(componentModel="spring") public interface SkillMapper { SkillResponse toResponse(Skill e); }

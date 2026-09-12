@@ -1,0 +1,1 @@
+package com.portfolio.features.education.mapper; import com.portfolio.features.education.dto.*; import com.portfolio.features.education.entity.Education; import org.mapstruct.Mapper; @Mapper(componentModel="spring") public interface EducationMapper { EducationResponse toResponse(Education entity); }

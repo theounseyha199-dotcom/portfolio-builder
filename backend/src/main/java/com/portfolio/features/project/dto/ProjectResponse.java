@@ -1,0 +1,1 @@
+package com.portfolio.features.project.dto; import java.util.*; public record ProjectResponse(UUID id,String title,String slug,String shortDescription,String description,String thumbnailUrl,String githubUrl,String demoUrl,boolean featured,int sortOrder,List<String> technologies) {}

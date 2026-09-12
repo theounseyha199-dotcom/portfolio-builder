@@ -1,0 +1,1 @@
+package com.portfolio.features.education.dto; import java.time.LocalDate; import java.util.UUID; public record EducationResponse(UUID id,String school,String degree,String major,LocalDate startDate,LocalDate endDate,String description,int sortOrder) {}

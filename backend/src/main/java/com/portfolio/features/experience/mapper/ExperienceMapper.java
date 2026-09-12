@@ -1,0 +1,1 @@
+package com.portfolio.features.experience.mapper; import com.portfolio.features.experience.dto.*; import com.portfolio.features.experience.entity.Experience; import org.mapstruct.Mapper; @Mapper(componentModel="spring") public interface ExperienceMapper { ExperienceResponse toResponse(Experience entity); }

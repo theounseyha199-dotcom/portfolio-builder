@@ -1,0 +1,14 @@
+package com.portfolio.features.portfolio.controller;
+
+import com.portfolio.common.api.ApiResponse; import com.portfolio.features.portfolio.dto.*; import com.portfolio.features.portfolio.mapper.PortfolioMapper; import com.portfolio.features.portfolio.service.PortfolioService; import com.portfolio.features.user.service.UserService;
+import jakarta.validation.Valid; import java.util.UUID; import lombok.RequiredArgsConstructor; import org.springframework.security.core.annotation.AuthenticationPrincipal; import org.springframework.security.oauth2.jwt.Jwt; import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/portfolios") @RequiredArgsConstructor
+public class PortfolioController { private final PortfolioService portfolios; private final UserService users; private final PortfolioMapper mapper; private final com.portfolio.features.portfolio.service.PortfolioCompletenessService completeness; private final com.portfolio.features.portfolio.service.PortfolioDesignService design;
+ @PostMapping public ApiResponse<PortfolioResponse> create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreatePortfolioRequest r) { return ApiResponse.success("Portfolio created successfully.", mapper.toResponse(portfolios.create(users.synchronize(jwt), r))); }
+ @GetMapping("/me") public ApiResponse<PortfolioResponse> mine(@AuthenticationPrincipal Jwt jwt) { return ApiResponse.success("Portfolio retrieved successfully.", mapper.toResponse(portfolios.mine(users.synchronize(jwt)))); }
+ @GetMapping("/me/completeness") public ApiResponse<PortfolioCompletenessResponse> completeness(@AuthenticationPrincipal Jwt jwt) { return ApiResponse.success("Portfolio completeness retrieved successfully.", completeness.calculate(users.synchronize(jwt))); }
+ @PutMapping("/me/design") public ApiResponse<PortfolioResponse> design(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody DesignRequest request){var user=users.synchronize(jwt);design.design(user,request);return ApiResponse.success("Portfolio design updated successfully.",mapper.toResponse(portfolios.mine(user)));}
+ @PutMapping("/{id}") public ApiResponse<PortfolioResponse> update(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id, @Valid @RequestBody UpdatePortfolioRequest r) { return ApiResponse.success("Portfolio updated successfully.", mapper.toResponse(portfolios.update(users.synchronize(jwt), id, r))); }
+ @PostMapping("/{id}/publish") public ApiResponse<PortfolioResponse> publish(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return ApiResponse.success("Portfolio published successfully.", mapper.toResponse(portfolios.setPublished(users.synchronize(jwt), id, true))); }
+ @PostMapping("/{id}/unpublish") public ApiResponse<PortfolioResponse> unpublish(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID id) { return ApiResponse.success("Portfolio unpublished successfully.", mapper.toResponse(portfolios.setPublished(users.synchronize(jwt), id, false))); }
+}

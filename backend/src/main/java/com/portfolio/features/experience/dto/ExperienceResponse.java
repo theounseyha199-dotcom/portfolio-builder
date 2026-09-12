@@ -1,0 +1,1 @@
+package com.portfolio.features.experience.dto; import java.time.LocalDate; import java.util.UUID; public record ExperienceResponse(UUID id,String company,String position,String location,LocalDate startDate,LocalDate endDate,boolean currentlyWorking,String description,int sortOrder) {}

@@ -1,0 +1,1 @@
+package com.portfolio.features.skill.dto; import jakarta.validation.constraints.*; public record SkillRequest(@NotBlank(message="Skill name is required.") @Size(max=100) String name,@Size(max=100) String category,int sortOrder) {}

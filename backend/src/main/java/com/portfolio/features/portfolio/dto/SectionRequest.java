@@ -1,0 +1,1 @@
+package com.portfolio.features.portfolio.dto; import jakarta.validation.constraints.*; import java.util.*; public record SectionRequest(@NotEmpty List<SectionItem> sections){public record SectionItem(@Pattern(regexp="HERO|ABOUT|PROJECTS|EXPERIENCE|EDUCATION|SKILLS|CONTACT",message="Section is not supported.") String sectionType,@Min(1) int position,boolean enabled){}} 

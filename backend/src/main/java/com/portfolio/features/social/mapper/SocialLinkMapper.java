@@ -1,0 +1,1 @@
+package com.portfolio.features.social.mapper; import com.portfolio.features.social.dto.*; import com.portfolio.features.social.entity.SocialLink; import org.mapstruct.Mapper; @Mapper(componentModel="spring") public interface SocialLinkMapper { SocialLinkResponse toResponse(SocialLink e); }
