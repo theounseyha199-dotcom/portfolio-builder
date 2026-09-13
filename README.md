@@ -101,3 +101,9 @@ For production, do not rely on local container storage. Set `STORAGE_TYPE=s3` an
 ## GitHub integration
 
 GitHub remains an optional project-import integration; users continue to authenticate with Keycloak. Create a GitHub OAuth App with homepage `http://localhost:3000` and callback `http://localhost:8081/api/integrations/github/callback`, then set `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GITHUB_REDIRECT_URI`, and `FRONTEND_URL`. The backend stores access tokens server-side only and requests the minimal `read:user` scope for account connection.
+
+## Resume analysis
+
+Content → Resume remains the place to upload or manage a resume. Import → Resume analyzes that existing upload and shows a read-only preview; it does not create or modify portfolio content.
+
+Resume analysis accepts PDF files only and supports text-based PDFs. Scanned/image-only resumes and password-protected PDFs are not supported yet. The pipeline uses PDFBox and deterministic local rules only: no AI, OCR, external parsing service, network crawl, or automatic import is involved. Extraction and parsing are performed transiently, and the resume text or parsed personal information is not logged.
