@@ -1,11 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ResumeImportPanel } from "./resume-import-panel";
-const { resumeApi } = vi.hoisted(() => ({ resumeApi: { parse: vi.fn() } }));
-vi.mock("@/features/resume/api", () => ({ resumeApi }));
+const { parseResume, mutationState } = vi.hoisted(() => ({ parseResume: vi.fn(), mutationState: { isLoading: false, isError: false, error: undefined as unknown } }));
+vi.mock("@/features/resume/rtk-api", () => ({ useParseResumeMutation: () => [parseResume, mutationState] }));
 describe("ResumeImportPanel", () => { beforeEach(() => vi.resetAllMocks());
  it("shows upload guidance when missing", () => { const go=vi.fn(); render(<ResumeImportPanel hasResume={false} onGoToResume={go}/>); fireEvent.click(screen.getByRole("button",{name:"Go to Resume"})); expect(go).toHaveBeenCalled(); });
  it("shows analyze state", () => { render(<ResumeImportPanel hasResume onGoToResume={vi.fn()}/>); expect(screen.getByRole("button",{name:"Analyze Resume"})).toBeEnabled(); });
- it("renders preview warnings", async () => { resumeApi.parse.mockResolvedValue({profile:{fullName:"Ada"},experiences:[],educations:[],skills:[{name:"Java"}],projects:[],warnings:["No projects section was detected."]}); render(<ResumeImportPanel hasResume onGoToResume={vi.fn()}/>); fireEvent.click(screen.getByRole("button",{name:"Analyze Resume"})); expect(await screen.findByText("Resume analyzed")).toBeInTheDocument(); expect(screen.getByText("Review notes")).toBeInTheDocument(); });
- it("renders parse error", async () => { resumeApi.parse.mockRejectedValue(new Error("No readable text was found.")); render(<ResumeImportPanel hasResume onGoToResume={vi.fn()}/>); fireEvent.click(screen.getByRole("button",{name:"Analyze Resume"})); expect(await screen.findByText("No readable text was found.")).toBeInTheDocument(); });
+ it("renders preview warnings", async () => { parseResume.mockReturnValue({unwrap: vi.fn().mockResolvedValue({data:{profile:{fullName:"Ada"},experiences:[],educations:[],skills:[{name:"Java"}],projects:[],warnings:["No projects section was detected."]}})}); render(<ResumeImportPanel hasResume onGoToResume={vi.fn()}/>); fireEvent.click(screen.getByRole("button",{name:"Analyze Resume"})); expect(await screen.findByText("Resume analyzed")).toBeInTheDocument(); expect(screen.getByText("Review notes")).toBeInTheDocument(); });
+ it("renders parse error", () => { mutationState.isError=true; mutationState.error={message:"No readable text was found."}; render(<ResumeImportPanel hasResume onGoToResume={vi.fn()}/>); expect(screen.getByText("No readable text was found.")).toBeInTheDocument(); mutationState.isError=false; });
 });
