@@ -11,6 +11,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
 @Service
 @ConditionalOnProperty(name = "app.storage.type", havingValue = "s3")
@@ -32,5 +33,6 @@ public class S3StorageService implements StorageService {
     if (base == null || base.isBlank()) throw new IllegalStateException("S3_PUBLIC_BASE_URL must be configured for public assets.");
     return base.replaceAll("/+$", "") + "/" + key;
   }
+  public java.io.InputStream open(String key) { try { return client.getObject(GetObjectRequest.builder().bucket(props.getS3().getBucket()).key(key).build()); } catch (RuntimeException exception) { throw new IllegalArgumentException("Resume file is unavailable."); } }
   private String extension(String contentType) { return switch (contentType) { case "image/jpeg" -> ".jpg"; case "image/png" -> ".png"; case "image/webp" -> ".webp"; case "application/pdf" -> ".pdf"; default -> ""; }; }
 }
