@@ -8,6 +8,6 @@ describe("resume import mapping", () => {
   });
   it("creates a Spring-compatible request and omits blank or invalid optional dates", () => {
     const request = mapFormValuesToImportRequest({ profile: { selected: true, fullName: " Ada ", headline: "", email: "", phone: "", location: "", website: "", linkedinUrl: "", githubUrl: "" }, experiences: [{ selected: true, company: " Acme ", position: " Engineer ", location: "", startDate: "Jan 2024", endDate: "", currentlyWorking: false, description: "" }], educations: [], skills: [{ selected: true, name: " Java ", category: "" }], projects: [{ selected: true, title: " App ", description: "", githubUrl: "", demoUrl: "", technologies: [" TypeScript ", ""] }] });
-    expect(request.experiences[0]).toMatchObject({ company: "Acme", position: "Engineer", startDate: undefined }); expect(request.skills[0].name).toBe("Java"); expect(request.projects[0].technologies).toEqual(["TypeScript"]);
+    expect(request.profile).toMatchObject({ website: undefined, linkedinUrl: undefined, githubUrl: undefined }); expect(request.experiences[0]).toMatchObject({ company: "Acme", position: "Engineer", startDate: undefined }); expect(request.skills[0].name).toBe("Java"); expect(request.projects[0].technologies).toEqual(["TypeScript"]);
   });
 });
