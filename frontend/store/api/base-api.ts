@@ -8,5 +8,5 @@ const authenticatedBaseQuery: BaseQueryFn<Request, unknown, ApiError> = async ({
   try { return { data: await api<unknown>(url, { method, body: body === undefined ? undefined : JSON.stringify(body) }) }; }
   catch (error) { return { error: { message: error instanceof Error ? error.message : "Request failed." } }; }
 };
-export const baseApi = createApi({ reducerPath: "api", baseQuery: authenticatedBaseQuery, tagTypes: ["Portfolio", "PortfolioCompleteness", "Profile", "Experience", "Education", "Skill", "Project", "Resume", "ResumePreview"], endpoints: () => ({}) });
+export const baseApi = createApi({ reducerPath: "api", baseQuery: authenticatedBaseQuery, tagTypes: ["Portfolio", "PortfolioCompleteness", "PortfolioDesign", "PortfolioPreview", "Profile", "Experience", "Education", "Skill", "Project", "Resume", "ResumePreview"], endpoints: () => ({}) });
 export type { ApiResponse };

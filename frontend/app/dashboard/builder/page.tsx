@@ -11,7 +11,9 @@ import { BuilderTopbar } from "@/components/builder/builder-topbar";
 import { ContentManager } from "@/components/builder/content-manager";
 import { GitHubImportPanel } from "@/components/builder/github-import-panel";
 import { ResumeImportPanel } from "@/components/builder/resume-import-panel";
+import { TemplateGallery } from "@/components/builder/template-gallery";
 import { defaultTheme, type PortfolioData, type Section as PortfolioSection, type Theme } from "@/components/portfolio/renderer/portfolio-renderer";
+import type { TemplateId } from "@/components/portfolio/templates";
 import { Button } from "@/components/ui";
 import { assetApi, type AssetInfo } from "@/features/content/assets";
 import type { Education, Experience, Project, Skill, SocialLink } from "@/features/content/types";
@@ -317,7 +319,7 @@ export default function BuilderPage() {
             ) : section === "Resume Import" ? (
               <ResumeImportPanel hasResume={Boolean(resume)} onGoToResume={() => setSection("Resume")} />
             ) : section === "Templates" ? (
-              <div className="space-y-3">{(["minimal", "developer", "modern"] as const).map((template) => <Button key={template} type="button" disabled={busy} className={portfolio?.templateKey === template ? "w-full justify-start" : "w-full justify-start bg-white text-primary ring-1 ring-border"} onClick={() => void saveDesign(template)}>{template[0].toUpperCase() + template.slice(1)} template</Button>)}</div>
+              preview && portfolio ? <TemplateGallery portfolio={preview} currentTemplate={(portfolio.templateKey || "minimal") as TemplateId} onApplied={load} /> : <p className="text-sm text-muted">Save your profile before choosing a template.</p>
             ) : section === "Style" ? (
               <div className="space-y-4"><label className="block text-sm font-medium">Primary color<input aria-label="Primary color" type="color" value={theme().primaryColor} onChange={(event) => void saveDesign(undefined, { ...theme(), primaryColor: event.target.value })} className="mt-2 block h-10 w-full" /></label><label className="block text-sm font-medium">Color mode<select aria-label="Color mode" value={theme().mode} onChange={(event) => void saveDesign(undefined, { ...theme(), mode: event.target.value as Theme["mode"] })} className="mt-2 w-full rounded border p-2"><option value="light">Light</option><option value="dark">Dark</option></select></label><label className="block text-sm font-medium">Content width<select aria-label="Content width" value={theme().contentWidth} onChange={(event) => void saveDesign(undefined, { ...theme(), contentWidth: event.target.value as Theme["contentWidth"] })} className="mt-2 w-full rounded border p-2"><option value="narrow">Narrow</option><option value="medium">Medium</option><option value="wide">Wide</option></select></label></div>
             ) : section === "Sections" ? (
