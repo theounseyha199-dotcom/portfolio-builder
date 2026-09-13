@@ -6,6 +6,7 @@ import { ArrowLeft, Save, Upload, Trash2 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { ContentManager } from "@/components/builder/content-manager";
 import { GitHubImportPanel } from "@/components/builder/github-import-panel";
+import { ResumeImportPanel } from "@/components/builder/resume-import-panel";
 import { assetApi, type AssetInfo } from "@/features/content/assets";
 import { api } from "@/lib/api";
 import type { ApiResponse, Portfolio } from "@/types";
@@ -18,7 +19,8 @@ type Section =
   | "Skills"
   | "Social Links"
   | "Resume"
-  | "GitHub";
+  | "GitHub"
+  | "Resume Import";
 const content = {
   Experience: "experiences",
   Education: "educations",
@@ -185,6 +187,7 @@ export default function BuilderPage() {
               "Social Links",
               "Resume",
               "GitHub",
+              "Resume Import",
             ] as Section[]
           ).map((item) => (
             <button
@@ -335,6 +338,8 @@ export default function BuilderPage() {
               </section>
             ) : section === "GitHub" ? (
               <GitHubImportPanel />
+            ) : section === "Resume Import" ? (
+              <ResumeImportPanel hasResume={Boolean(resume)} onGoToResume={() => setSection("Resume")} />
             ) : (
               <ContentManager kind={content[section]} />
             )}
