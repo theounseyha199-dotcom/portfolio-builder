@@ -1,0 +1,1 @@
+import { TemplateLayout } from "../shared/template-layout"; import type { PortfolioTemplateProps } from "../types"; export function CreativeTemplate(props: PortfolioTemplateProps) { return <TemplateLayout {...props} variant="creative" />; }

@@ -1,0 +1,1 @@
+import { TemplateLayout } from "../shared/template-layout"; import type { PortfolioTemplateProps } from "../types"; export function MinimalTemplate(props: PortfolioTemplateProps) { return <TemplateLayout {...props} variant="minimal" />; }

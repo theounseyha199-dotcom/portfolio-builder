@@ -1,2 +1,16 @@
-import { DeveloperTemplate, MinimalTemplate, ModernTemplate } from "@/components/portfolio/templates";
-export type Theme={primaryColor:string;backgroundColor:string;textColor:string;mutedColor:string;fontFamily:string;mode:"light"|"dark";radius:"none"|"small"|"medium"|"large";projectLayout:"grid"|"list";contentWidth:"narrow"|"medium"|"wide"}; export const defaultTheme:Theme={primaryColor:"#20419E",backgroundColor:"#FFFFFF",textColor:"#111827",mutedColor:"#667085",fontFamily:"Inter",mode:"light",radius:"medium",projectLayout:"grid",contentWidth:"medium"}; export type Section={sectionType:string;position:number;enabled:boolean}; export type PortfolioData={fullName:string;headline?:string;bio?:string;location?:string;publicEmail?:string;profileImageUrl?:string;resume?:{available:boolean;url?:string};templateKey?:string;themeConfig?:string;sections?:Section[];projects:{id:string;title:string;shortDescription?:string;thumbnailUrl?:string;technologies?:string[];featured?:boolean}[];experiences:any[];educations:any[];skills:any[];socialLinks:any[]}; const templates:any={minimal:MinimalTemplate,developer:DeveloperTemplate,modern:ModernTemplate}; export function PortfolioRenderer({portfolio}:{portfolio:PortfolioData}){let theme=defaultTheme;try{theme={...theme,...JSON.parse(portfolio.themeConfig||"{}")}}catch{}const Template=templates[portfolio.templateKey||"minimal"]||MinimalTemplate;return <Template portfolio={portfolio} theme={theme} sections={portfolio.sections||[]}/>}
+import { portfolioTemplateRegistry } from "@/components/portfolio/templates";
+import type { PortfolioRenderData, PortfolioSection, PortfolioTheme, TemplateId } from "@/components/portfolio/templates";
+
+export type Theme = PortfolioTheme;
+export type Section = PortfolioSection;
+export type PortfolioData = PortfolioRenderData;
+export const defaultTheme: Theme = portfolioTemplateRegistry.minimal.defaultTheme;
+
+export function PortfolioRenderer({ portfolio }: { portfolio: PortfolioData }) {
+  const templateId: TemplateId = portfolio.templateKey && portfolio.templateKey in portfolioTemplateRegistry ? portfolio.templateKey : "minimal";
+  const definition = portfolioTemplateRegistry[templateId];
+  let theme = definition.defaultTheme;
+  try { theme = { ...theme, ...JSON.parse(portfolio.themeConfig || "{}") as Partial<Theme> }; } catch { /* Use safe template defaults if stored JSON is invalid. */ }
+  const Template = definition.component;
+  return <Template portfolio={portfolio} theme={theme} sections={portfolio.sections || []} />;
+}
