@@ -1,8 +1,39 @@
 {
   "name": "portfolio-builder-frontend",
   "private": true,
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "lint": "eslint ." },
-  "dependencies": { "@tanstack/react-query": "^5.66.0", "keycloak-js": "^26.2.2", "lucide-react": "^0.468.0", "next": "^15.5.6", "react": "^19.1.0", "react-dom": "^19.1.0", "react-hook-form": "^7.54.2", "zod": "^3.24.2" },
-  "devDependencies": { "@tailwindcss/postcss": "^4.1.0", "@types/node": "^22.13.5", "@types/react": "^19.0.8", "@types/react-dom": "^19.0.3", "eslint": "^9.20.0", "eslint-config-next": "^15.5.6", "tailwindcss": "^4.1.0", "typescript": "^5.7.3" }
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@reduxjs/toolkit": "^2.12.0",
+    "@tanstack/react-query": "^5.66.0",
+    "keycloak-js": "^26.2.2",
+    "lucide-react": "^0.468.0",
+    "next": "^15.5.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.54.2",
+    "react-redux": "^9.3.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "eslint": "^9.20.0",
+    "eslint-config-next": "^15.5.6",
+    "jsdom": "^30.0.1",
+    "tailwindcss": "^4.1.0",
+    "typescript": "^5.7.3",
+    "vitest": "^5.0.0"
+  }
 }
-
