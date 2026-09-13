@@ -1,26 +1,23 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Save, Upload, Trash2 } from "lucide-react";
+import { Save, Upload, Trash2 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
+import { BuilderDeviceSwitcher, type PreviewDevice } from "@/components/builder/builder-device-switcher";
+import { BuilderPreview } from "@/components/builder/builder-preview";
+import { BuilderSettingsPanel } from "@/components/builder/builder-settings-panel";
+import { BuilderSidebar, type BuilderPanel } from "@/components/builder/builder-sidebar";
+import { BuilderTopbar } from "@/components/builder/builder-topbar";
 import { ContentManager } from "@/components/builder/content-manager";
 import { GitHubImportPanel } from "@/components/builder/github-import-panel";
 import { ResumeImportPanel } from "@/components/builder/resume-import-panel";
+import { defaultTheme, type PortfolioData, type Section as PortfolioSection, type Theme } from "@/components/portfolio/renderer/portfolio-renderer";
+import { Button } from "@/components/ui";
 import { assetApi, type AssetInfo } from "@/features/content/assets";
+import type { Education, Experience, Project, Skill, SocialLink } from "@/features/content/types";
 import { api } from "@/lib/api";
 import type { ApiResponse, Portfolio } from "@/types";
 type BuilderPortfolio = Portfolio & { profileImageUrl?: string };
-type Section =
-  | "Profile"
-  | "Experience"
-  | "Education"
-  | "Projects"
-  | "Skills"
-  | "Social Links"
-  | "Resume"
-  | "GitHub"
-  | "Resume Import";
 const content = {
   Experience: "experiences",
   Education: "educations",
@@ -30,12 +27,14 @@ const content = {
 } as const;
 export default function BuilderPage() {
   const { authenticated, login } = useAuth();
-  const [section, setSection] = useState<Section>("Profile"),
+  const [section, setSection] = useState<BuilderPanel>("Profile"),
     [portfolio, setPortfolio] = useState<BuilderPortfolio | null>(null),
     [form, setForm] = useState({ slug: "", fullName: "", headline: "" }),
     [resume, setResume] = useState<AssetInfo | null>(null),
     [message, setMessage] = useState(""),
-    [busy, setBusy] = useState(false);
+    [busy, setBusy] = useState(false),
+    [device, setDevice] = useState<PreviewDevice>("desktop"),
+    [preview, setPreview] = useState<PortfolioData | null>(null);
   const load = async () => {
     try {
       const p = await api<ApiResponse<BuilderPortfolio>>("/api/portfolios/me");
@@ -45,13 +44,21 @@ export default function BuilderPage() {
         fullName: p.data.fullName,
         headline: p.data.headline ?? "",
       });
+      const [experiences, educations, skills, projects, socialLinks, sections, resumeAsset] = await Promise.all([
+        api<ApiResponse<Experience[]>>("/api/experiences").then((value) => value.data),
+        api<ApiResponse<Education[]>>("/api/educations").then((value) => value.data),
+        api<ApiResponse<Skill[]>>("/api/skills").then((value) => value.data),
+        api<ApiResponse<Project[]>>("/api/projects").then((value) => value.data),
+        api<ApiResponse<SocialLink[]>>("/api/social-links").then((value) => value.data),
+        api<ApiResponse<PortfolioSection[]>>("/api/portfolio-sections").then((value) => value.data),
+        assetApi.resume(),
+      ]);
+      setResume(resumeAsset);
+      setPreview({ ...p.data, templateKey: p.data.templateKey as PortfolioData["templateKey"], experiences, educations, skills, projects, socialLinks, sections, resume: resumeAsset ? { available: true, url: resumeAsset.url } : { available: false } });
     } catch {
       setPortfolio(null);
-    }
-    try {
-      setResume(await assetApi.resume());
-    } catch {
       setResume(null);
+      setPreview(null);
     }
   };
   useEffect(() => {
@@ -138,6 +145,10 @@ export default function BuilderPage() {
       setBusy(false);
     }
   }
+  async function togglePublish() { if (!portfolio) return; setBusy(true); try { const action = portfolio.published ? "unpublish" : "publish"; const response = await api<ApiResponse<BuilderPortfolio>>(`/api/portfolios/${portfolio.id}/${action}`, { method: "POST" }); setPortfolio(response.data); await load(); } catch (e) { error(e, "Unable to update publishing."); } finally { setBusy(false); } }
+  const theme = (): Theme => { try { return { ...defaultTheme, ...JSON.parse(portfolio?.themeConfig ?? "{}") as Partial<Theme> }; } catch { return defaultTheme; } };
+  async function saveDesign(nextTemplate = portfolio?.templateKey ?? "minimal", nextTheme = theme()) { if (!portfolio) return; setBusy(true); try { await api<ApiResponse<BuilderPortfolio>>("/api/portfolios/me/design", { method: "PUT", body: JSON.stringify({ templateKey: nextTemplate, themeConfig: nextTheme }) }); await load(); } catch (e) { error(e, "Unable to save design changes."); } finally { setBusy(false); } }
+  async function saveSections(next: PortfolioSection[]) { if (!portfolio) return; setBusy(true); try { await api<ApiResponse<PortfolioSection[]>>("/api/portfolio-sections", { method: "PUT", body: JSON.stringify({ sections: next.map((item, index) => ({ ...item, position: index + 1 })) }) }); await load(); } catch (e) { error(e, "Unable to save section changes."); } finally { setBusy(false); } }
   if (!authenticated)
     return (
       <main className="p-10">
@@ -157,50 +168,14 @@ export default function BuilderPage() {
     .slice(0, 2);
   return (
     <main className="min-h-screen bg-surface">
-      <header className="flex items-center justify-between border-b bg-white px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard">
-            <ArrowLeft size={20} />
-          </Link>
-          <h1 className="font-bold">Portfolio Builder</h1>
+      <BuilderTopbar name={portfolio?.fullName ?? form.fullName} published={Boolean(portfolio?.published)} slug={portfolio?.slug} device={device} onDeviceChange={setDevice} onPreview={() => { if (portfolio) window.open(`/u/${portfolio.slug}`, "_blank", "noopener,noreferrer"); }} onPublish={() => void togglePublish()} />
+      <div className="grid min-h-[calc(100vh-73px)] lg:grid-cols-[220px_minmax(0,1fr)_360px]">
+        <div className="hidden border-r lg:block"><BuilderSidebar active={section} onSelect={setSection} /></div>
+        <div className="flex min-w-0 flex-col">
+          <div className="flex gap-2 overflow-x-auto border-b bg-white p-2 lg:hidden"><BuilderDeviceSwitcher value={device} onChange={setDevice} /></div>
+          {preview ? <BuilderPreview portfolio={preview} device={device} /> : <div className="flex flex-1 items-center justify-center p-8 text-center text-muted">Save your profile to start your live preview.</div>}
         </div>
-        {section === "Profile" && (
-          <button
-            form="portfolio-form"
-            disabled={busy}
-            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white"
-          >
-            <Save size={16} />
-            {busy ? "Saving…" : "Save Changes"}
-          </button>
-        )}
-      </header>
-      <div className="grid lg:grid-cols-[240px_1fr]">
-        <aside className="flex gap-1 overflow-x-auto border-r bg-white p-3 lg:block">
-          {(
-            [
-              "Profile",
-              "Experience",
-              "Education",
-              "Projects",
-              "Skills",
-              "Social Links",
-              "Resume",
-              "GitHub",
-              "Resume Import",
-            ] as Section[]
-          ).map((item) => (
-            <button
-              key={item}
-              onClick={() => setSection(item)}
-              className={`block shrink-0 rounded-md px-3 py-2 text-left text-sm ${section === item ? "bg-blue-50 font-semibold text-primary" : "text-muted"}`}
-            >
-              {item}
-            </button>
-          ))}
-        </aside>
-        <div className="p-6">
-          <div className="max-w-2xl">
+        <BuilderSettingsPanel title={section}>
             {section === "Profile" ? (
               <form
                 id="portfolio-form"
@@ -279,6 +254,7 @@ export default function BuilderPage() {
                 {message && (
                   <p className="mt-4 text-sm text-primary">{message}</p>
                 )}
+                <Button className="mt-5 inline-flex items-center gap-2" disabled={busy}><Save size={16} />{busy ? "Saving…" : "Save profile"}</Button>
               </form>
             ) : section === "Resume" ? (
               <section className="rounded-xl border bg-white p-6">
@@ -340,11 +316,18 @@ export default function BuilderPage() {
               <GitHubImportPanel />
             ) : section === "Resume Import" ? (
               <ResumeImportPanel hasResume={Boolean(resume)} onGoToResume={() => setSection("Resume")} />
+            ) : section === "Templates" ? (
+              <div className="space-y-3">{(["minimal", "developer", "modern"] as const).map((template) => <Button key={template} type="button" disabled={busy} className={portfolio?.templateKey === template ? "w-full justify-start" : "w-full justify-start bg-white text-primary ring-1 ring-border"} onClick={() => void saveDesign(template)}>{template[0].toUpperCase() + template.slice(1)} template</Button>)}</div>
+            ) : section === "Style" ? (
+              <div className="space-y-4"><label className="block text-sm font-medium">Primary color<input aria-label="Primary color" type="color" value={theme().primaryColor} onChange={(event) => void saveDesign(undefined, { ...theme(), primaryColor: event.target.value })} className="mt-2 block h-10 w-full" /></label><label className="block text-sm font-medium">Color mode<select aria-label="Color mode" value={theme().mode} onChange={(event) => void saveDesign(undefined, { ...theme(), mode: event.target.value as Theme["mode"] })} className="mt-2 w-full rounded border p-2"><option value="light">Light</option><option value="dark">Dark</option></select></label><label className="block text-sm font-medium">Content width<select aria-label="Content width" value={theme().contentWidth} onChange={(event) => void saveDesign(undefined, { ...theme(), contentWidth: event.target.value as Theme["contentWidth"] })} className="mt-2 w-full rounded border p-2"><option value="narrow">Narrow</option><option value="medium">Medium</option><option value="wide">Wide</option></select></label></div>
+            ) : section === "Sections" ? (
+              <div className="space-y-2">{(preview?.sections ?? []).map((item, index, all) => <div key={item.sectionType} className="flex items-center gap-2 rounded border p-2"><input aria-label={`Show ${item.sectionType}`} type="checkbox" checked={item.enabled} disabled={item.sectionType === "HERO" || busy} onChange={(event) => void saveSections(all.map((value) => value.sectionType === item.sectionType ? { ...value, enabled: event.target.checked } : value))} /><span className="flex-1 text-sm">{item.sectionType[0] + item.sectionType.slice(1).toLowerCase()}</span><Button type="button" className="px-2 py-1 text-xs" disabled={index === 0 || busy} onClick={() => { const next = [...all]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; void saveSections(next); }}>Up</Button><Button type="button" className="px-2 py-1 text-xs" disabled={index === all.length - 1 || busy} onClick={() => { const next = [...all]; [next[index], next[index + 1]] = [next[index + 1], next[index]]; void saveSections(next); }}>Down</Button></div>)}</div>
+            ) : section === "Portfolio" || section === "Publishing" ? (
+              <div className="space-y-3 text-sm"><p>{portfolio ? `Your public address is /u/${portfolio.slug}` : "Create a portfolio from the Profile panel first."}</p>{portfolio && <Button type="button" disabled={busy} onClick={() => void togglePublish()}>{portfolio.published ? "Unpublish portfolio" : "Publish portfolio"}</Button>}</div>
             ) : (
               <ContentManager kind={content[section]} />
             )}
-          </div>
-        </div>
+        </BuilderSettingsPanel>
       </div>
     </main>
   );
