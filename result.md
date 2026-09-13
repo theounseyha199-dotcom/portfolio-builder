@@ -238,3 +238,28 @@ so the requested part-by-part commits can be pushed.
 The authenticated browser flow remains pending: no real Keycloak login,
 upload, parse, import, duplicate re-import, persistence inspection, builder
 refresh, completeness refresh, or preview rendering was claimed as verified.
+
+## Git recovery and delivery update — 2026-09-13
+
+- The usable repository metadata is at `/tmp/portfolio-builder-git-meta` and
+  targets `https://github.com/theounseyha199-dotcom/portfolio-builder.git` on
+  `main`. The workspace `.git` mount remains unavailable, but the recovered
+  metadata was used successfully for normal commits and pushes.
+- Verified commit author: `Theoun SeyHa <theounseyha199@gmail.com>`.
+- Pushed commits:
+  - `36ff41a add: add real resume review form`
+  - `245ee38 test: add resume import regression tests`
+  - `ba40d29 docs: record milestone 6b verification status`
+- Existing upstream history already included the shadcn foundation and RTK
+  resume-analysis migration, so no duplicate commits were manufactured.
+- Other existing workspace changes (GitHub integration, Docker, build-system,
+  and infrastructure work) were intentionally left uncommitted because they
+  are outside the Resume 6B scope.
+- The tracked `GITHUB_CLIENT_SECRET` remains an empty placeholder. The
+  previously exposed GitHub OAuth client secret must still be revoked/rotated
+  manually in GitHub; a replacement belongs only in ignored local `.env` or a
+  deployment/CI secret store.
+
+Milestone 6B remains **in progress**. The missing evidence is the real
+authenticated end-to-end browser flow; all source-level, test, build, and
+Docker checks listed above have passed.
