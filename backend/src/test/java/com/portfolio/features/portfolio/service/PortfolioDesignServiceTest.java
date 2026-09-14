@@ -42,6 +42,6 @@ class PortfolioDesignServiceTest {
   void sectionUpdatePreservesOwnershipAndStoresOrderVisibilityAndStyle() {
     AppUser owner = new AppUser(); Portfolio portfolio = new Portfolio(); portfolio.setId(java.util.UUID.randomUUID()); when(access.mine(owner)).thenReturn(portfolio); when(sections.findByPortfolioIdOrderByPositionAsc(portfolio.getId())).thenReturn(List.of());
     service.updateSections(owner, new SectionRequest(List.of(new SectionRequest.SectionItem("PROJECTS", 1, false, "grid", "left", "muted", "large"), new SectionRequest.SectionItem("HERO", 2, false, "split", "center", "default", "normal"))));
-    verify(access, org.mockito.Mockito.atLeastOnce()).mine(owner); verify(sections).deleteByPortfolioId(portfolio.getId()); verify(sections, org.mockito.Mockito.times(2)).save(org.mockito.ArgumentMatchers.argThat(section -> section.getPortfolio() == portfolio));
+    verify(access, org.mockito.Mockito.atLeastOnce()).mine(owner); verify(sections).deleteByPortfolioId(portfolio.getId()); verify(sections).flush(); verify(sections, org.mockito.Mockito.times(2)).save(org.mockito.ArgumentMatchers.argThat(section -> section.getPortfolio() == portfolio));
   }
 }
