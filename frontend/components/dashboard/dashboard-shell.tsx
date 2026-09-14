@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   BriefcaseBusiness,
-  CheckCircle2,
   Copy,
   ExternalLink,
   FileText,

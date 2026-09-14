@@ -9,7 +9,6 @@ import {
   ExternalLink,
   Loader2,
   Send,
-  Sparkles,
 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
 import type { PreviewDevice } from "./builder-device-switcher";

@@ -5,8 +5,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
   Calendar,
-  ExternalLink,
-  Github,
   Pencil,
   Plus,
   Trash2,

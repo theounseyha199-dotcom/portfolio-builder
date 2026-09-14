@@ -4,16 +4,12 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   FileText,
-  Layers,
-  LayoutTemplate,
-  Pencil,
   Save,
   Trash2,
   Upload,
-  User,
 } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
-import { BuilderDeviceSwitcher, type PreviewDevice } from "@/components/builder/builder-device-switcher";
+import { type PreviewDevice } from "@/components/builder/builder-device-switcher";
 import { BuilderPreview } from "@/components/builder/builder-preview";
 import { BuilderSettingsPanel } from "@/components/builder/builder-settings-panel";
 import { BuilderMobileNavigation, BuilderSidebar, type BuilderPanel } from "@/components/builder/builder-sidebar";

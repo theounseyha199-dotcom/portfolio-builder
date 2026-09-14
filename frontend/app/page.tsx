@@ -3,8 +3,6 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
-  ExternalLink,
-  Github,
   Layers,
   LayoutTemplate,
   Palette,
@@ -15,7 +13,7 @@ import {
 } from "lucide-react";
 import { AuthButton } from "@/components/auth/auth-button";
 import { portfolioTemplateList } from "@/components/portfolio/templates";
-import { Badge, Button } from "@/components/ui";
+import { Badge } from "@/components/ui";
 
 const steps = [
   {
