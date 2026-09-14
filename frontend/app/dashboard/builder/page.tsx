@@ -620,6 +620,7 @@ export default function BuilderPage() {
               <DesignPanel
                 value={themeDraft}
                 busy={busy}
+                templateId={(portfolio?.templateKey || "modern") as TemplateId}
                 onChange={setThemeDraft}
                 onSave={(next) => saveDesign(undefined, next)}
               />
