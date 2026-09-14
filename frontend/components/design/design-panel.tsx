@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { portfolioFonts } from "@/lib/design/font-registry";
+import { motion, useReducedMotion } from "@/lib/motion";
 
 export interface StylePreset {
   id: string;
@@ -166,6 +167,7 @@ export function DesignPanel({
   onChange: (theme: PortfolioTheme) => void;
   onSave: (theme: PortfolioTheme) => void | Promise<void>;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const [draft, setDraft] = useState(value);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
@@ -245,7 +247,7 @@ export function DesignPanel({
   const selectRow = <K extends keyof PortfolioTheme>(
     key: K,
     label: string,
-    options: readonly { value: string; label: string }[]
+    options: { value: string; label: string }[]
   ) => (
     <div key={key} className="space-y-1.5">
       <label className="text-xs font-semibold text-slate-700">{label}</label>
@@ -279,7 +281,7 @@ export function DesignPanel({
           variant="outline"
           size="sm"
           onClick={() => setShowResetConfirm(true)}
-          className="text-[11px] h-7 px-2.5 text-slate-600 hover:text-slate-900 gap-1"
+          className="text-[11px] h-7 px-2.5 text-slate-600 hover:text-slate-900 gap-1 cursor-pointer"
         >
           <RotateCcw size={12} />
           <span>Reset</span>
@@ -300,11 +302,13 @@ export function DesignPanel({
               draft.primaryColor === preset.theme.primaryColor &&
               draft.mode === preset.theme.mode;
             return (
-              <button
+              <motion.button
                 key={preset.id}
                 type="button"
                 onClick={() => applyPreset(preset)}
-                className={`relative flex flex-col items-start rounded-xl border p-2.5 text-left transition-all ${
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.02 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+                className={`relative flex flex-col items-start rounded-xl border p-2.5 text-left transition-colors cursor-pointer ${
                   isActive
                     ? "border-primary bg-blue-50/40 ring-1 ring-primary/20 shadow-xs"
                     : "border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50/50"
@@ -321,7 +325,15 @@ export function DesignPanel({
                       style={{ background: preset.theme.backgroundColor }}
                     />
                   </div>
-                  {isActive && <Check size={12} className="text-primary" />}
+                  {isActive && (
+                    <motion.div
+                      initial={prefersReducedMotion ? false : { scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    >
+                      <Check size={12} className="text-primary" />
+                    </motion.div>
+                  )}
                 </div>
                 <span className="text-xs font-bold text-slate-900">
                   {preset.name}
@@ -329,7 +341,7 @@ export function DesignPanel({
                 <span className="text-[10px] text-slate-500 line-clamp-1">
                   {preset.description}
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -357,12 +369,14 @@ export function DesignPanel({
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
             {QUICK_COLORS.map((hex) => (
-              <button
+              <motion.button
                 key={hex}
                 type="button"
                 aria-label={`Select ${hex}`}
                 onClick={() => update("primaryColor", hex)}
-                className={`size-6 rounded-full border border-black/10 transition-transform hover:scale-110 ${
+                whileHover={prefersReducedMotion ? undefined : { scale: 1.15 }}
+                whileTap={prefersReducedMotion ? undefined : { scale: 0.95 }}
+                className={`size-6 rounded-full border border-black/10 transition-shadow cursor-pointer ${
                   draft.primaryColor === hex
                     ? "ring-2 ring-primary ring-offset-2 scale-105"
                     : ""
@@ -384,14 +398,18 @@ export function DesignPanel({
 
         {/* Contrast Warning Banner */}
         {isLowContrast && (
-          <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-amber-800">
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50/80 p-3 text-amber-800"
+          >
             <AlertTriangle size={15} className="mt-0.5 shrink-0 text-amber-600" />
             <div className="text-[11px] leading-relaxed">
               <span className="font-bold">Low contrast warning:</span> Text
               contrast ratio is {contrastRatio.toFixed(1)}:1 (recommended 4.5:1
               minimum). Text may be difficult to read on this background.
             </div>
-          </div>
+          </motion.div>
         )}
       </Card>
 

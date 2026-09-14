@@ -22,6 +22,7 @@ import {
 } from "@/components/portfolio/templates";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { motion, useReducedMotion } from "@/lib/motion";
 
 const SECTION_META: Record<
   PortfolioSectionType,
@@ -80,6 +81,7 @@ export function SectionsPanel({
   busy: boolean;
   onSave: (sections: PortfolioSection[]) => void | Promise<void>;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const template = getTemplateById(templateId);
 
   const update = (
@@ -125,9 +127,11 @@ export function SectionsPanel({
           const layouts = template.supportedSectionLayouts[item.sectionType] ?? [];
 
           return (
-            <div
+            <motion.div
               key={item.sectionType}
-              className={`rounded-xl border transition-all ${
+              layout={!prefersReducedMotion}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className={`rounded-xl border transition-colors ${
                 item.enabled
                   ? "border-slate-200 bg-white shadow-2xs"
                   : "border-dashed border-slate-200 bg-slate-50/70 opacity-70"
@@ -260,7 +264,7 @@ export function SectionsPanel({
                   </label>
                 </div>
               )}
-            </div>
+            </motion.div>
           );
         })}
       </div>
