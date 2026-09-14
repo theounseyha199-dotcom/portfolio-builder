@@ -1,15 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   ArrowRight,
   Eye,
+  Loader2,
   Monitor,
   Smartphone,
   Tablet,
   X,
 } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { PortfolioRenderer } from "@/components/portfolio/renderer/portfolio-renderer";
 import {
   portfolioTemplateList,
@@ -19,6 +21,10 @@ import {
   type TemplateId,
 } from "@/components/portfolio/templates";
 import { Badge, Button, Card } from "@/components/ui";
+import {
+  useGetPortfolioMeQuery,
+  useUpdatePortfolioDesignMutation,
+} from "@/features/portfolio";
 import { motion, useReducedMotion } from "@/lib/motion";
 
 const demo: PortfolioRenderData = {
@@ -103,10 +109,20 @@ const categories: Array<"ALL" | TemplateCategory> = [
 ];
 
 export function PublicTemplateGallery() {
+  const router = useRouter();
   const prefersReducedMotion = useReducedMotion();
+  const { authenticated, login } = useAuth();
+  const { data: portfolio } = useGetPortfolioMeQuery(undefined, {
+    skip: !authenticated,
+  });
+  const [updatePortfolioDesign, { isLoading: isApplying }] =
+    useUpdatePortfolioDesignMutation();
+
   const [category, setCategory] = useState<(typeof categories)[number]>("ALL");
   const [preview, setPreview] = useState<TemplateId | null>(null);
+  const [confirmId, setConfirmId] = useState<TemplateId | null>(null);
   const [device, setDevice] = useState<Device>("desktop");
+  const [notice, setNotice] = useState("");
 
   const shown = useMemo(
     () =>
@@ -118,8 +134,61 @@ export function PublicTemplateGallery() {
 
   const previewTemplate = preview ? portfolioTemplateRegistry[preview] : null;
 
+  const handleUseTemplate = (templateId: TemplateId) => {
+    // Case A: Logged out — store intended template and trigger login
+    if (!authenticated) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("portfolia_intended_template", templateId);
+      }
+      login({
+        redirectUri:
+          typeof window !== "undefined"
+            ? `${window.location.origin}/dashboard/onboarding?template=${templateId}`
+            : undefined,
+      });
+      return;
+    }
+
+    // Case B: Logged in without portfolio — route to onboarding with preselected template
+    if (!portfolio?.data?.id) {
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("portfolia_intended_template", templateId);
+      }
+      router.push(`/dashboard/onboarding?template=${templateId}`);
+      return;
+    }
+
+    // Case C: Logged in with existing portfolio — prompt confirmation
+    setConfirmId(templateId);
+  };
+
+  const handleConfirmApply = async (templateId: TemplateId) => {
+    const template = portfolioTemplateRegistry[templateId];
+    setNotice("");
+    try {
+      await updatePortfolioDesign({
+        templateKey: templateId,
+        themeConfig: template.defaultTheme,
+      }).unwrap();
+      setConfirmId(null);
+      setPreview(null);
+      router.push("/dashboard/builder?panel=templates");
+    } catch {
+      setNotice("Unable to apply template. Please try again.");
+    }
+  };
+
   return (
     <>
+      {notice && (
+        <div
+          role="status"
+          className="mb-6 rounded-xl border border-slate-200 bg-white p-4 text-sm font-medium text-slate-900 shadow-xs"
+        >
+          {notice}
+        </div>
+      )}
+
       {/* Category Tabs */}
       <div
         className="flex flex-wrap items-center gap-1.5"
@@ -142,14 +211,12 @@ export function PublicTemplateGallery() {
             >
               {isActive && !prefersReducedMotion && (
                 <motion.div
-                  layoutId="activePublicTemplateCategory"
-                  className="absolute inset-0 bg-primary z-0"
-                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                  layoutId="activePublicCategory"
+                  className="absolute inset-0 bg-primary -z-10"
+                  transition={{ duration: 0.18 }}
                 />
               )}
-              <span className="relative z-10">
-                {item === "ALL" ? "All" : item[0] + item.slice(1).toLowerCase()}
-              </span>
+              <span>{item === "ALL" ? "All Templates" : item}</span>
             </Button>
           );
         })}
@@ -159,51 +226,55 @@ export function PublicTemplateGallery() {
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {shown.map((template) => {
           const isDark = template.defaultTheme.mode === "dark";
+
           return (
             <motion.div
               key={template.id}
-              layout={!prefersReducedMotion}
-              whileHover={prefersReducedMotion ? undefined : { y: -3, scale: 1.01 }}
-              transition={{ duration: 0.16 }}
+              whileHover={
+                prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }
+              }
+              transition={{ duration: 0.18 }}
+              className="h-full"
             >
               <Card
-                className="group flex flex-col overflow-hidden p-0 border-slate-200/80 hover:border-slate-300 hover:shadow-md transition-shadow duration-200"
+                data-template-id={template.id}
+                className="flex h-full flex-col justify-between overflow-hidden rounded-2xl border-slate-200/90 bg-white shadow-xs transition-shadow duration-200 hover:shadow-md"
               >
-                {/* Thumbnail Container */}
+                {/* Visual Thumbnail */}
                 <div
-                  className={`relative h-48 p-4 ${
+                  className={`h-40 border-b p-3 transition-colors ${
                     isDark ? "bg-slate-950 text-white" : "bg-slate-100/70 text-slate-900"
                   }`}
                 >
                   <div
-                    className={`h-full rounded-xl border p-4 flex flex-col justify-between shadow-xs transition-transform group-hover:scale-[1.01] ${
+                    className={`mx-auto h-full max-w-xs overflow-hidden rounded-xl border p-3 flex flex-col justify-between shadow-2xs ${
                       isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"
                     }`}
                   >
-                    <div className="flex items-center justify-between border-b border-current/10 pb-2">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
                         <span
-                          className="size-3 rounded-full"
-                          style={{ background: template.defaultTheme.primaryColor }}
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: template.defaultTheme.primaryColor }}
                         />
-                        <span className="text-[11px] font-bold tracking-tight">
+                        <span className="text-[11px] font-semibold tracking-tight">
                           {template.name}
                         </span>
                       </div>
-                      <span className="text-[9px] font-mono opacity-50 uppercase">
+                      <Badge variant="outline" className="text-[9px] py-0 px-1.5">
                         {template.category}
-                      </span>
+                      </Badge>
                     </div>
 
-                    <div className="space-y-1.5 py-1">
+                    <div className="space-y-1 my-auto">
                       <div
                         className={`h-2.5 w-3/4 rounded ${
-                          isDark ? "bg-slate-700" : "bg-slate-800"
+                          isDark ? "bg-slate-800" : "bg-slate-200"
                         }`}
                       />
                       <div
                         className={`h-1.5 w-1/2 rounded ${
-                          isDark ? "bg-slate-800" : "bg-slate-200"
+                          isDark ? "bg-slate-800/60" : "bg-slate-200/60"
                         }`}
                       />
                     </div>
@@ -261,12 +332,16 @@ export function PublicTemplateGallery() {
                       <span>Preview</span>
                     </Button>
 
-                    <Link
-                      href="/dashboard/builder"
-                      className="flex-1 inline-flex items-center justify-center rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      aria-label={`Use ${template.name} template`}
+                      onClick={() => handleUseTemplate(template.id)}
+                      className="flex-1 text-xs font-semibold"
                     >
                       Use Template
-                    </Link>
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -331,13 +406,15 @@ export function PublicTemplateGallery() {
                 })}
               </div>
 
-              <Link
-                href="/dashboard/builder"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => handleUseTemplate(previewTemplate.id)}
+                className="gap-1.5 text-xs font-semibold"
               >
                 <span>Use this template</span>
                 <ArrowRight size={13} />
-              </Link>
+              </Button>
 
               <button
                 type="button"
@@ -362,6 +439,50 @@ export function PublicTemplateGallery() {
                 templateOverride={preview}
                 themeOverride={previewTemplate.defaultTheme}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Dialog Before Switching Template for Existing Portfolio Owners */}
+      {confirmId && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="apply-template-title"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-in fade-in-50"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-xl space-y-4">
+            <h2
+              id="apply-template-title"
+              className="text-lg font-bold text-slate-900"
+            >
+              Apply {portfolioTemplateRegistry[confirmId].name} template?
+            </h2>
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Your existing portfolio content (projects, experience, bio) will stay
+              completely safe. Style colors and typography will adopt this
+              template&apos;s recommended defaults.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isApplying}
+                onClick={() => setConfirmId(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                disabled={isApplying}
+                onClick={() => void handleConfirmApply(confirmId)}
+                className="gap-2"
+              >
+                {isApplying && <Loader2 size={14} className="animate-spin" />}
+                <span>{isApplying ? "Applying…" : "Apply Template"}</span>
+              </Button>
             </div>
           </div>
         </div>

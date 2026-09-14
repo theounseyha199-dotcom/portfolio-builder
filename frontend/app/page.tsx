@@ -15,11 +15,11 @@ import { AuthButton } from "@/components/auth/auth-button";
 import { LandingBuilderDemo } from "@/components/landing/landing-builder-demo";
 import { Reveal } from "@/components/landing/reveal";
 import { portfolioTemplateList } from "@/components/portfolio/templates";
+import { LandingFooterCta, LandingHeroCta } from "@/components/landing/landing-cta";
 import {
   AnimatedGridPattern,
   Badge,
   BorderBeam,
-  ShimmerButton,
 } from "@/components/ui";
 
 const steps = [
@@ -134,16 +134,7 @@ export default function Home() {
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Link href="/dashboard">
-                  <ShimmerButton
-                    shimmerColor="#ffffff"
-                    shimmerDuration="3s"
-                    className="gap-2 text-base font-semibold"
-                  >
-                    <span>Build My Portfolio</span>
-                    <ArrowRight size={17} />
-                  </ShimmerButton>
-                </Link>
+                <LandingHeroCta />
 
                 <Link
                   href="/templates"
@@ -442,13 +433,7 @@ export default function Home() {
               writing a line of CSS.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 rounded-xl bg-white px-7 py-3.5 text-base font-bold text-primary shadow-sm hover:bg-blue-50 active:bg-blue-100 transition-colors"
-              >
-                Build My Portfolio
-                <ArrowRight size={17} />
-              </Link>
+              <LandingFooterCta />
               <Link
                 href="/templates"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/30 bg-transparent px-6 py-3.5 text-base font-semibold text-white hover:bg-white/10 active:bg-white/20 transition-colors"
