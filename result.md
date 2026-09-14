@@ -563,4 +563,74 @@ All commits created using git identity `Theoun SeyHa <theounseyha199@gmail.com>`
 7. `cb10225` — `refactor: add template-specific motion polish`
 8. `b51f711` — `test: add animated ui regression coverage`
 
+# Milestone 10 — Guided Portfolio Creation, New User Onboarding & Template-First Creation Flow
+
+## Completed
+
+- **Guided Onboarding Flow (`/dashboard/onboarding`)**:
+  - Built a streamlined, non-technical 3-step creation flow for newly registered/authenticated users without a portfolio:
+    1. **Start Method (`StartMethodStep`)**: Choose between "Upload Resume" (fastest path to `/dashboard/builder?panel=resume-import`), "Import from GitHub" (direct path to `/dashboard/builder?panel=github`), and "Start Manually" (direct path to `/dashboard/builder?panel=profile`). Default is "Start Manually".
+    2. **Template Selection (`TemplateStep`)**: Displays all 6 production templates (Minimal, Developer, Modern, Professional, Creative, Student) from `PORTFOLIO_TEMPLATES` registry with category tags, badges, descriptions, recommended audiences, and full interactive preview modal across Desktop (100%), Tablet (768px), and Mobile (390px) device breakpoints using presentation-only fixture data.
+    3. **Portfolio Basics (`PortfolioBasicsStep`)**: React Hook Form + Zod schema validation for portfolio name, automated public URL slug derivation (hyphen-separated lowercase alphanumeric, locked once manually edited), public URL preview helper (`http://localhost:3000/u/{slug}`), professional headline field, and inline server error handling (such as duplicate slug conflicts).
+  - Multi-step progress bar (`OnboardingProgress`) with Motion active pill animations, step status badges, and accessible keyboard navigation (`aria-checked`, `role="radio"`).
+- **Deep-Linking & Start Method Routing**:
+  - Extended `BuilderSidebar` to export `parsePanelQuery(param)` and `PANEL_QUERY_MAP` supporting deep links:
+    - `?panel=profile` → Profile panel
+    - `?panel=resume-import` → Resume Import panel
+    - `?panel=github` → GitHub Import panel
+    - `?panel=templates` → Templates gallery panel
+    - `?panel=style` → Style panel
+    - `?panel=sections` → Sections panel
+  - Builder synchronization: `/dashboard/builder` reads `?panel=` search query param on load and opens the exact requested panel while falling back safely to `profile`.
+  - Guard logic:
+    - If an authenticated user without a portfolio visits `/dashboard/builder`, they are automatically redirected to `/dashboard/onboarding`.
+    - If an authenticated user who already owns a portfolio visits `/dashboard/onboarding`, they are automatically redirected to `/dashboard`.
+- **Template-First Creation Flow (`/templates`)**:
+  - Enhanced `PublicTemplateGallery` ("Use Template" buttons on all template cards):
+    - **Guest (Logged Out)**: Stores intended template in `sessionStorage` (`portfolia_intended_template`) and redirects to Keycloak login with redirect URI back to `/dashboard/onboarding?template={templateId}`.
+    - **Logged In (No Portfolio)**: Stores intended template and redirects directly to `/dashboard/onboarding?template={templateId}`, automatically preselecting that template in Step 2.
+    - **Logged In (Existing Portfolio)**: Prompts confirmation dialog warning that styles will reset to the template's defaults while preserving all existing content, then applies the template and redirects to the builder.
+  - Landing page hero and footer CTAs (`LandingHeroCta`, `LandingFooterCta`) intelligently route logged-out visitors to login/onboarding, users without portfolios to `/dashboard/onboarding`, and existing portfolio owners to `/dashboard/builder`.
+  - Empty dashboard state (`/dashboard`) updated to route to `/dashboard/onboarding` for initial portfolio setup.
+- **Backend Atomic Template & Section Initialization**:
+  - Updated `CreatePortfolioRequest` to support both `name`/`fullName` and `template`/`templateKey` with validation regex matching the 6 production templates.
+  - Added `PortfolioDesignService.initializeDefaults(Portfolio portfolio, String templateKey)`:
+    - Atomically sets the selected `template_key`.
+    - Sets controlled `theme_config` JSON string matching template defaults.
+    - Initializes and persists default section records (`portfolio_sections`) in recommended order (HERO, PROJECTS, ABOUT, SKILLS, EXPERIENCE, EDUCATION, SOCIAL, RESUME) with enabled visibility.
+  - Enforced single-portfolio constraint strictly derived from authenticated JWT `sub` claim.
+- **Automated Verification & Regression Testing**:
+  - Added 18 Vitest unit/component tests in `frontend/components/onboarding/onboarding.test.tsx` testing progress bar states, start method card selection, template cards, preview modal, basics form validation, auto-slug derivation, server-side conflict display, and deep-link query navigation.
+  - Added backend regression tests in `backend/src/test/java/com/portfolio/features/portfolio/service/PortfolioServiceTest.java` verifying creation with template initialization, default sections, duplicate slug rejection, and invalid template rejection.
+  - Executed two real end-to-end browser tests via headless Firefox and Selenium:
+    1. Guest user registers via Keycloak → redirected to `/dashboard/onboarding` → selects Resume start method → previews Developer template across devices → creates portfolio → lands on `/dashboard/builder?panel=resume-import` with Developer template and dark theme active → subsequent visit to `/dashboard/onboarding` cleanly redirects to `/dashboard`.
+    2. Guest user visits `/templates` → clicks "Use Template" on Creative template → registers via Keycloak → redirected to `/dashboard/onboarding?template=creative` with Creative pre-selected → completes basics → lands on `/dashboard/builder?panel=profile` with Creative template active.
+
+## Verification
+
+| Check | Result |
+| --- | --- |
+| `frontend/npm run lint` | Passed — 0 errors and 0 warnings |
+| `frontend/npm run test` | Passed — 10 test files, 59 tests |
+| Clean `frontend/npm run build` | Passed — Next.js 15.5.25 (9/9 routes generated including `/dashboard/onboarding`) |
+| `backend/./mvnw clean test` | Passed — 46 tests, 0 failures, 0 errors, 0 skipped |
+| `docker compose config --quiet` | Passed |
+| Production Compose override config validation | Passed |
+| `docker compose build backend frontend` | Passed — both Docker images built successfully |
+| E2E Browser Test 1: Onboarding flow (Resume import start → Developer template) | Passed |
+| E2E Browser Test 2: Pre-login template selection (`/templates` → Creative template) | Passed |
+| Port 3000 cleanup | Verified clean |
+
+## Commits Pushed to `origin/main`
+
+All commits created using git identity `Theoun SeyHa <theounseyha199@gmail.com>` and pushed to `origin main`:
+
+1. `7356f77` — `chore: sync build configuration and regression test suites`
+2. `a380e48` — `add: add portfolio onboarding flow`
+3. `8060b3e` — `add: add onboarding template selection`
+4. `675e9ec` — `add: connect template gallery to onboarding`
+5. `7ec0021` — `add: add portfolio creation basics`
+6. `72674c9` — `add: route onboarding to builder start methods`
+7. `2605e65` — `test: add portfolio onboarding regression tests`
+
 
