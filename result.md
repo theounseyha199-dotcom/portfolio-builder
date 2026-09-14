@@ -633,4 +633,100 @@ All commits created using git identity `Theoun SeyHa <theounseyha199@gmail.com>`
 6. `72674c9` — `add: route onboarding to builder start methods`
 7. `2605e65` — `test: add portfolio onboarding regression tests`
 
+# Milestone 11 — AI Writing Assistant (awaiting live provider verification)
 
+## Implementation
+
+- Added backend `AiProvider` abstraction and `OpenAiProvider`, using the OpenAI
+  Responses HTTP API. No provider SDK or credential is included in browser code.
+  Provider requests set `store=false`, use no tools, and include only the active
+  textarea text plus server-owned instructions. Reference:
+  https://developers.openai.com/api/reference/cli/resources/responses/methods/create
+- Optional backend environment settings: `AI_PROVIDER=openai`, `AI_API_KEY`,
+  `AI_MODEL`, `AI_TIMEOUT_SECONDS=15`, `AI_MAX_INPUT_LENGTH=5000`. Example files
+  contain placeholders only; Compose passes these solely to the backend.
+  For local Maven execution, export the variables into the backend process
+  environment (Maven does not automatically load the repository `.env`).
+- Added authenticated `POST /api/ai/writing/improve`, accepting only `target`,
+  `action`, and `text`. Unknown properties, raw prompts, and invalid enums are
+  rejected. The controller resolves the application user from the verified JWT.
+- Service controls target/action combinations, minimum 5-character input,
+  Profile maximum 3000 characters, and Experience/Project maximum 5000 (or the
+  lower configured cap). Requests never write portfolio content or AI history.
+- Server-owned prompts prohibit fabricated employers, technologies, seniority,
+  metrics, dates, clients, responsibilities, and achievements. Source text is
+  explicitly treated as data, not instructions. Output checks reject blank,
+  oversized, invalid Unicode, markup, and changed/added/removed numeric facts.
+- Fact preservation is not mathematically guaranteed by a prompt or numeric
+  validator. Semantic factuality must be evaluated with the configured model
+  and reviewed by the user; no live-model factuality claim is made yet.
+- Provider HTTP failures return a generic 503, timeouts return 504, and missing
+  key/model configuration returns a clean unavailable response. Timeout is
+  bounded to 1–20 seconds with no automatic retries. Application startup remains
+  functional without AI. Neither source text nor provider responses are logged.
+- Added an RTK Query mutation with no portfolio invalidation or automatic save.
+- Added shared writing controls to Profile Bio/About, Experience Description,
+  and Project Short Description. The current editors use local React state;
+  this milestone preserves that architecture and does not replace them with
+  parallel editors. Bio acceptance marks the existing builder save state dirty.
+- Actions: Improve, Professional, Concise, Fix Grammar; Experience also offers
+  Highlight Impact and Project offers Highlight Technical Work. Profile does
+  not expose impact highlighting.
+- Added a Radix Dialog styled with the existing shadcn-style Button/Textarea
+  foundation. It supports keyboard focus trapping, Escape, focus restoration,
+  original/suggested comparison, Edit, Reject, and explicit Use Suggestion.
+  Accept updates only the form field. The existing Save action persists it.
+- Rejection/failure leaves the form intact. A changed source field blocks
+  acceptance of a stale result. Duplicate in-flight requests are blocked and
+  unmounting aborts the browser request. AI never runs on typing, blur, or load.
+- Privacy copy explains that only the active field is sent for processing and
+  asks the user to review facts. The scrollable dialog fits mobile widths;
+  loading uses a reduced-motion-aware spinner with screen-reader announcements.
+- Corrected an existing Experience editor mapping: its Description field must
+  submit `description`, not `shortDescription`, to persist through the real API.
+
+## Verification and remaining work
+
+- Automated tests mock `AiProvider` or RTK Query. Local HTTP tests validate
+  Authorization, request body/privacy options, response parsing, provider
+  errors, and real client timeout behavior without an external API key.
+- Frontend tests cover target-specific actions, empty/oversized input, loading,
+  comparison, Reject, edited acceptance, failure preservation, stale output,
+  current unsaved Experience/Project text, and absence on Education fields.
+- Real Keycloak login with the existing onboarding development account passed.
+  No-key UI returned a clean unavailable message, retained unsaved Bio text,
+  and reloading confirmed AI did not save it. The 390px builder had no
+  horizontal overflow. No portfolio content was persisted during this check.
+- Live-provider Profile/Experience/Project generation, semantic fact checks,
+  Accept → Save → Reload, and mobile suggestion-dialog browser verification
+  remain pending `AI_API_KEY` and `AI_MODEL` supplied through local environment.
+  No live key was supplied or committed, and no mock was substituted in runtime.
+- Milestone 11 remains **in progress** until the configured authenticated AI
+  workflow and fact-preservation checks pass. Quotas, billing, history,
+  automatic saving, chatbot, and generation outside writing remain out of scope.
+
+| Final automated check | Result |
+| --- | --- |
+| Frontend lint | Passed |
+| Frontend tests | Passed — 12 files, 71 tests |
+| Clean frontend production build | Passed — 9 routes |
+| Backend `./mvnw clean verify` | Passed — 67 tests, 0 failures/errors/skipped |
+| Development and production Compose validation | Passed; existing unset production-variable warnings |
+| Backend and frontend Docker builds | Passed |
+| Real authenticated no-key workflow | Passed — unavailable response, preserved form, no autosave |
+| Configured-provider authenticated AI workflow | Pending key/model configuration |
+
+## Git delivery
+
+Recovered metadata at `/tmp/portfolio-builder-git-meta` was reused on `main`,
+targeting `theounseyha199-dotcom/portfolio-builder`. Each commit below was pushed
+separately with author `Theoun SeyHa <theounseyha199@gmail.com>`:
+
+- `ceca2d8` — `add: add ai writing provider foundation`
+- `5a645e9` — `add: add ai writing assistant api`
+- `32768d5` — `add: add portfolio ai writing controls`
+- `8746d11` — `fix: connect description writing forms`
+- `a7a6b14` — `add: add ai writing regression coverage`
+
+Application processes started for verification were stopped afterward to avoid
+occupying ports 3000 and 8081. PostgreSQL and Keycloak were left running.
