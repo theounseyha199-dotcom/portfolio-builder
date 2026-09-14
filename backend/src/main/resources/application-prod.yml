@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI}
+app:
+  encryption:
+    key: ${APP_ENCRYPTION_KEY}
+  github:
+    api-base-url: ${GITHUB_API_BASE_URL:https://api.github.com}
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET}
+    redirect-uri: ${GITHUB_REDIRECT_URI}
+    frontend-url: ${FRONTEND_URL}
+  cors:
+    allowed-origin: ${APP_CORS_ALLOWED_ORIGIN}
+  storage:
+    type: ${STORAGE_TYPE:s3}
+    local-path: ${STORAGE_LOCAL_PATH:}
+    public-base-url: ${APP_PUBLIC_BASE_URL}
+    max-image-size: ${STORAGE_MAX_IMAGE_SIZE:5242880}
+    max-project-image-size: ${STORAGE_MAX_PROJECT_IMAGE_SIZE:8388608}
+    max-resume-size: ${STORAGE_MAX_RESUME_SIZE:5242880}
+    s3:
+      endpoint: ${S3_ENDPOINT:}
+      region: ${S3_REGION}
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+      bucket: ${S3_BUCKET}
+      public-base-url: ${S3_PUBLIC_BASE_URL}

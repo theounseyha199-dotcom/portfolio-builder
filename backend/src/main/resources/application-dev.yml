@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5434/portfolio_db}
+    username: ${SPRING_DATASOURCE_USERNAME:portfolio}
+    password: ${SPRING_DATASOURCE_PASSWORD:portfolio}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI:http://localhost:8082/realms/portfolio-builder}
+app:
+  encryption:
+    key: ${APP_ENCRYPTION_KEY:}
+  github:
+    api-base-url: ${GITHUB_API_BASE_URL:https://api.github.com}
+    client-id: ${GITHUB_CLIENT_ID:}
+    client-secret: ${GITHUB_CLIENT_SECRET:}
+    redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8081/api/integrations/github/callback}
+    frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  cors:
+    allowed-origin: ${APP_CORS_ALLOWED_ORIGIN:http://localhost:3000}
+  storage:
+    type: ${STORAGE_TYPE:local}
+    local-path: ${STORAGE_LOCAL_PATH:./storage}
+    public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:8081}
+    max-image-size: ${STORAGE_MAX_IMAGE_SIZE:5242880}
+    max-project-image-size: ${STORAGE_MAX_PROJECT_IMAGE_SIZE:8388608}
+    max-resume-size: ${STORAGE_MAX_RESUME_SIZE:5242880}
+    s3:
+      endpoint: ${S3_ENDPOINT:}
+      region: ${S3_REGION:us-east-1}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+      bucket: ${S3_BUCKET:}
+      public-base-url: ${S3_PUBLIC_BASE_URL:}

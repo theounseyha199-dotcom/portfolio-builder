@@ -5,7 +5,7 @@ An MVP SaaS for creating and publishing professional portfolios without code. Th
 ## Architecture
 
 ```text
-Next.js (3000) → Spring Boot REST API (8081) → PostgreSQL (5432)
+Next.js (3000) → Spring Boot REST API (8081) → PostgreSQL (5434 on the host; 5432 in Docker)
        ↓                     ↑
    Keycloak (8082) — JWT access token
 ```
@@ -31,7 +31,7 @@ Copy the sample and replace all development defaults before sharing or deploying
 cp .env.example .env
 ```
 
-Key variables: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KEYCLOAK_ADMIN_PASSWORD`, service ports, and the `NEXT_PUBLIC_*` Keycloak/API URLs. `.env` is ignored by Git.
+Key variables: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KEYCLOAK_ADMIN_PASSWORD`, `APP_ENCRYPTION_KEY`, service ports, and the `NEXT_PUBLIC_*` Keycloak/API URLs. `.env` is ignored by Git. Generate the encryption key with `openssl rand -base64 32`; it must decode to exactly 32 bytes.
 
 ## Run with Docker
 
@@ -43,7 +43,7 @@ On the first run, PostgreSQL creates separate `portfolio_db` and `keycloak_db` d
 
 Open:
 
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3000 (stop any existing local Next.js server first)
 - Backend health: http://localhost:8081/api/public/health
 - Keycloak Admin: http://localhost:8082 (credentials from `.env`)
 
@@ -51,14 +51,48 @@ The supplied realm import creates `portfolio-builder`, a public client named `po
 
 ## Local development
 
-Start PostgreSQL and Keycloak with Docker, then run each app separately:
+Start only the infrastructure services, then run the applications locally. This
+avoids starting a second backend or frontend on ports `8081` and `3000`:
 
 ```bash
-cd backend && mvn spring-boot:run
-cd frontend && npm install && npm run dev
+docker compose up -d postgres keycloak
+
+cd backend && ./mvnw spring-boot:run
+cd ../frontend && npm ci && npm run dev
 ```
 
-For local backend execution, use the issuer `http://localhost:8082/realms/portfolio-builder`. Set `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI` accordingly when running outside Docker.
+The local backend defaults to the Compose database at `localhost:5434` and the
+issuer `http://localhost:8082/realms/portfolio-builder`. If you use a different
+database, override `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and
+`SPRING_DATASOURCE_PASSWORD` explicitly. For the full Docker stack, run only
+`docker compose up --build`; do not additionally start a local backend or `npm run dev`.
+
+## Testing and CI
+
+The Maven wrapper is the only backend build system:
+
+```bash
+cd backend && ./mvnw clean verify
+cd ../frontend && npm ci && npm run lint && npm run test && npm run build
+```
+
+GitHub Actions runs those checks, validates Compose, builds Docker images, and surfaces frontend dependency vulnerabilities on every push and pull request.
+
+## Security
+
+GitHub OAuth access tokens are stored as AES-256-GCM ciphertext in `github_connections.encrypted_access_token`. Ciphertext uses the versioned format `v1:<base64-iv>:<base64-ciphertext>` and a fresh random IV per token. Existing plaintext connections are intentionally invalid after the migration and must reconnect; plaintext is never guessed or silently used. Keep `APP_ENCRYPTION_KEY` in a secret manager and plan future version/key rotation around the ciphertext version marker.
+
+Never log GitHub tokens, authorization headers, or encryption keys. Production secrets must be supplied through the deployment platform or a managed secret store (for example AWS KMS/Secrets Manager, Vault, GCP Secret Manager, or Azure Key Vault).
+
+## Production
+
+`docker-compose.yml` is development-oriented and runs Keycloak with `start-dev`. Production must use the override and an external TLS reverse proxy:
+
+```bash
+docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
+Copy `.env.production.example` to a secure deployment secret source first. The production profile requires database credentials, issuer URL, CORS/public URLs, `APP_ENCRYPTION_KEY`, S3 credentials, and GitHub OAuth secrets without development defaults. Keycloak uses `start`, hostname configuration, and proxy headers; terminate TLS at the reverse proxy and do not expose PostgreSQL directly. Pin production images to immutable digests as part of release management.
 
 ## API overview
 

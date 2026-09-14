@@ -6,7 +6,9 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-portfolio}
       POSTGRES_DB: ${PORTFOLIO_DB:-portfolio_db}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      # Keep the host port separate from a locally installed PostgreSQL server.
+      # Services inside this Compose network always use postgres:5432.
+      - "${POSTGRES_PORT:-5434}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-keycloak-db.sql:ro
@@ -42,6 +44,7 @@ services:
   backend:
     build: ./backend
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${PORTFOLIO_DB:-portfolio_db}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-portfolio}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-portfolio}
@@ -60,6 +63,7 @@ services:
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
       GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost:8081/api/integrations/github/callback}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
       SERVER_PORT: 8081
     ports:
       - "${BACKEND_PORT:-8081}:8081"
@@ -70,6 +74,12 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8081/api/public/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   frontend:
     build:
@@ -84,7 +94,7 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
       backend:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   postgres_data:

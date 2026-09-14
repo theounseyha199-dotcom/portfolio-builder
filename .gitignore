@@ -7,10 +7,7 @@ target/
 .idea/
 *.iml
 *.log
-
 .gradle/
-**/.gradle/
-node_modules/
-.next/
-build/
-target/
+**/build/
+backend/storage/
+*.tsbuildinfo
