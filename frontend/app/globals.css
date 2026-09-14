@@ -103,3 +103,10 @@ button, input, textarea, select {
   outline: 2px solid var(--app-primary);
   outline-offset: 2px;
 }
+
+@keyframes border-beam {
+  100% {
+    offset-distance: 100%;
+  }
+}
+
