@@ -14,6 +14,7 @@ import {
 } from "@/components/portfolio/templates";
 import { Badge, Button, Card } from "@/components/ui";
 import { useUpdatePortfolioDesignMutation } from "@/features/portfolio/design-api";
+import { motion, useReducedMotion } from "@/lib/motion";
 
 type Device = "desktop" | "tablet" | "mobile";
 const filters: Array<"ALL" | TemplateCategory> = [
@@ -39,6 +40,7 @@ export function TemplateGallery({
   currentTemplate: TemplateId;
   onApplied: () => void | Promise<void>;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const [category, setCategory] = useState<(typeof filters)[number]>("ALL");
   const [previewId, setPreviewId] = useState<TemplateId | null>(null);
   const [confirmId, setConfirmId] = useState<TemplateId | null>(null);
@@ -92,20 +94,29 @@ export function TemplateGallery({
               variant={isActive ? "primary" : "secondary"}
               size="sm"
               onClick={() => setCategory(filter)}
-              className={
+              className={`relative h-8 px-3 text-xs font-semibold overflow-hidden ${
                 isActive
-                  ? "h-8 px-3 text-xs font-semibold shadow-xs"
-                  : "h-8 px-3 text-xs font-medium text-slate-600 bg-white border-slate-200 hover:bg-slate-50"
-              }
+                  ? "shadow-xs text-white"
+                  : "text-slate-600 bg-white border-slate-200 hover:bg-slate-50"
+              }`}
             >
-              {label}
+              {isActive && !prefersReducedMotion && (
+                <motion.div
+                  layoutId="activeTemplateCategoryIndicator"
+                  className="absolute inset-0 bg-primary z-0"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{label}</span>
             </Button>
           );
         })}
       </div>
 
       {notice && (
-        <div
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
           role="status"
           className="rounded-xl border border-blue-100 bg-blue-50/80 p-3 text-xs font-medium text-primary flex items-center justify-between"
         >
@@ -113,11 +124,11 @@ export function TemplateGallery({
           <button
             type="button"
             onClick={() => setNotice("")}
-            className="text-primary hover:underline text-[11px]"
+            className="text-primary hover:underline text-[11px] cursor-pointer"
           >
             Dismiss
           </button>
-        </div>
+        </motion.div>
       )}
 
       {/* Template Cards Grid */}
@@ -125,14 +136,19 @@ export function TemplateGallery({
         {templates.map((template) => {
           const isCurrent = currentTemplate === template.id;
           return (
-            <Card
+            <motion.div
               key={template.id}
-              className={`group overflow-hidden p-0 transition-all duration-200 ${
-                isCurrent
-                  ? "border-primary/80 ring-2 ring-primary/20 shadow-sm"
-                  : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
-              }`}
+              layout={!prefersReducedMotion}
+              whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
+              transition={{ duration: 0.16 }}
             >
+              <Card
+                className={`group overflow-hidden p-0 transition-shadow duration-200 ${
+                  isCurrent
+                    ? "border-primary/80 ring-2 ring-primary/20 shadow-sm"
+                    : "border-slate-200/80 hover:border-slate-300 hover:shadow-md"
+                }`}
+              >
               {/* Thumbnail representation */}
               <TemplateThumbnail template={template.id} />
 
@@ -191,6 +207,7 @@ export function TemplateGallery({
                 </div>
               </div>
             </Card>
+          </motion.div>
           );
         })}
       </div>
@@ -245,7 +262,7 @@ export function TemplateGallery({
           <div className="mx-auto min-h-0 w-full max-w-7xl flex-1 overflow-auto rounded-b-2xl bg-slate-200/90 p-4 sm:p-8">
             <div
               data-preview-device={device}
-              className="mx-auto min-h-full overflow-hidden bg-white shadow-2xl rounded-xl transition-[width] duration-200"
+              className="mx-auto min-h-full overflow-hidden bg-white shadow-2xl rounded-xl transition-[width] duration-300 ease-out"
               style={{ width: widths[device], maxWidth: "100%" }}
             >
               <PortfolioRenderer

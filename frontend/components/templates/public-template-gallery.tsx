@@ -19,6 +19,7 @@ import {
   type TemplateId,
 } from "@/components/portfolio/templates";
 import { Badge, Button, Card } from "@/components/ui";
+import { motion, useReducedMotion } from "@/lib/motion";
 
 const demo: PortfolioRenderData = {
   fullName: "Alex Morgan",
@@ -102,6 +103,7 @@ const categories: Array<"ALL" | TemplateCategory> = [
 ];
 
 export function PublicTemplateGallery() {
+  const prefersReducedMotion = useReducedMotion();
   const [category, setCategory] = useState<(typeof categories)[number]>("ALL");
   const [preview, setPreview] = useState<TemplateId | null>(null);
   const [device, setDevice] = useState<Device>("desktop");
@@ -132,13 +134,22 @@ export function PublicTemplateGallery() {
               variant={isActive ? "primary" : "secondary"}
               size="sm"
               onClick={() => setCategory(item)}
-              className={
+              className={`relative h-8 px-3.5 text-xs font-semibold overflow-hidden ${
                 isActive
-                  ? "h-8 px-3.5 text-xs font-semibold shadow-xs"
-                  : "h-8 px-3.5 text-xs font-medium text-slate-600 bg-white border-slate-200 hover:bg-slate-50"
-              }
+                  ? "shadow-xs text-white"
+                  : "text-slate-600 bg-white border-slate-200 hover:bg-slate-50"
+              }`}
             >
-              {item === "ALL" ? "All" : item[0] + item.slice(1).toLowerCase()}
+              {isActive && !prefersReducedMotion && (
+                <motion.div
+                  layoutId="activePublicTemplateCategory"
+                  className="absolute inset-0 bg-primary z-0"
+                  transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">
+                {item === "ALL" ? "All" : item[0] + item.slice(1).toLowerCase()}
+              </span>
             </Button>
           );
         })}
@@ -149,111 +160,117 @@ export function PublicTemplateGallery() {
         {shown.map((template) => {
           const isDark = template.defaultTheme.mode === "dark";
           return (
-            <Card
+            <motion.div
               key={template.id}
-              className="group flex flex-col overflow-hidden p-0 border-slate-200/80 hover:border-slate-300 hover:shadow-md transition-all duration-200"
+              layout={!prefersReducedMotion}
+              whileHover={prefersReducedMotion ? undefined : { y: -3, scale: 1.01 }}
+              transition={{ duration: 0.16 }}
             >
-              {/* Thumbnail Container */}
-              <div
-                className={`relative h-48 p-4 ${
-                  isDark ? "bg-slate-950 text-white" : "bg-slate-100/70 text-slate-900"
-                }`}
+              <Card
+                className="group flex flex-col overflow-hidden p-0 border-slate-200/80 hover:border-slate-300 hover:shadow-md transition-shadow duration-200"
               >
+                {/* Thumbnail Container */}
                 <div
-                  className={`h-full rounded-xl border p-4 flex flex-col justify-between shadow-xs transition-transform group-hover:scale-[1.01] ${
-                    isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"
+                  className={`relative h-48 p-4 ${
+                    isDark ? "bg-slate-950 text-white" : "bg-slate-100/70 text-slate-900"
                   }`}
                 >
-                  <div className="flex items-center justify-between border-b border-current/10 pb-2">
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="size-3 rounded-full"
-                        style={{ background: template.defaultTheme.primaryColor }}
-                      />
-                      <span className="text-[11px] font-bold tracking-tight">
-                        {template.name}
+                  <div
+                    className={`h-full rounded-xl border p-4 flex flex-col justify-between shadow-xs transition-transform group-hover:scale-[1.01] ${
+                      isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between border-b border-current/10 pb-2">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="size-3 rounded-full"
+                          style={{ background: template.defaultTheme.primaryColor }}
+                        />
+                        <span className="text-[11px] font-bold tracking-tight">
+                          {template.name}
+                        </span>
+                      </div>
+                      <span className="text-[9px] font-mono opacity-50 uppercase">
+                        {template.category}
                       </span>
                     </div>
-                    <span className="text-[9px] font-mono opacity-50 uppercase">
-                      {template.category}
-                    </span>
-                  </div>
 
-                  <div className="space-y-1.5 py-1">
-                    <div
-                      className={`h-2.5 w-3/4 rounded ${
-                        isDark ? "bg-slate-700" : "bg-slate-800"
-                      }`}
-                    />
-                    <div
-                      className={`h-1.5 w-1/2 rounded ${
-                        isDark ? "bg-slate-800" : "bg-slate-200"
-                      }`}
-                    />
-                  </div>
+                    <div className="space-y-1.5 py-1">
+                      <div
+                        className={`h-2.5 w-3/4 rounded ${
+                          isDark ? "bg-slate-700" : "bg-slate-800"
+                        }`}
+                      />
+                      <div
+                        className={`h-1.5 w-1/2 rounded ${
+                          isDark ? "bg-slate-800" : "bg-slate-200"
+                        }`}
+                      />
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-2">
-                    <div
-                      className={`h-9 rounded-md border ${
-                        isDark
-                          ? "border-slate-800 bg-slate-950/60"
-                          : "border-slate-100 bg-slate-50"
-                      }`}
-                    />
-                    <div
-                      className={`h-9 rounded-md border ${
-                        isDark
-                          ? "border-slate-800 bg-slate-950/60"
-                          : "border-slate-100 bg-slate-50"
-                      }`}
-                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <div
+                        className={`h-9 rounded-md border ${
+                          isDark
+                            ? "border-slate-800 bg-slate-950/60"
+                            : "border-slate-100 bg-slate-50"
+                        }`}
+                      />
+                      <div
+                        className={`h-9 rounded-md border ${
+                          isDark
+                            ? "border-slate-800 bg-slate-950/60"
+                            : "border-slate-100 bg-slate-50"
+                        }`}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Card Details */}
-              <div className="flex flex-1 flex-col justify-between p-5 space-y-4">
-                <div>
-                  <div className="flex items-start justify-between gap-2">
-                    <h2 className="text-lg font-bold text-slate-900">
-                      {template.name}
-                    </h2>
-                    <Badge variant="outline" className="text-[10px]">
-                      {template.tier}
-                    </Badge>
+                {/* Card Details */}
+                <div className="flex flex-1 flex-col justify-between p-5 space-y-4">
+                  <div>
+                    <div className="flex items-start justify-between gap-2">
+                      <h2 className="text-lg font-bold text-slate-900">
+                        {template.name}
+                      </h2>
+                      <Badge variant="outline" className="text-[10px]">
+                        {template.tier}
+                      </Badge>
+                    </div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-slate-600 line-clamp-2">
+                      {template.description}
+                    </p>
+                    <p className="mt-2 text-[11px] font-medium text-slate-500">
+                      Best for: {template.recommendedFor.join(", ")}
+                    </p>
                   </div>
-                  <p className="mt-1.5 text-xs leading-relaxed text-slate-600 line-clamp-2">
-                    {template.description}
-                  </p>
-                  <p className="mt-2 text-[11px] font-medium text-slate-500">
-                    Best for: {template.recommendedFor.join(", ")}
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => {
-                      setPreview(template.id);
-                      setDevice("desktop");
-                    }}
-                    className="flex-1 text-xs font-semibold gap-1.5"
-                  >
-                    <Eye size={14} />
-                    <span>Preview</span>
-                  </Button>
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setPreview(template.id);
+                        setDevice("desktop");
+                      }}
+                      className="flex-1 text-xs font-semibold gap-1.5"
+                    >
+                      <Eye size={14} />
+                      <span>Preview</span>
+                    </Button>
 
-                  <Link
-                    href="/dashboard/builder"
-                    className="flex-1 inline-flex items-center justify-center rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
-                  >
-                    Use Template
-                  </Link>
+                    <Link
+                      href="/dashboard/builder"
+                      className="flex-1 inline-flex items-center justify-center rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
+                    >
+                      Use Template
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </motion.div>
           );
         })}
       </div>
@@ -337,7 +354,7 @@ export function PublicTemplateGallery() {
           <div className="mx-auto min-h-0 w-full max-w-7xl flex-1 overflow-auto rounded-b-2xl bg-slate-200/90 p-4 sm:p-8">
             <div
               data-preview-device={device}
-              className="mx-auto min-h-full overflow-hidden bg-white shadow-2xl rounded-xl transition-[width] duration-200"
+              className="mx-auto min-h-full overflow-hidden bg-white shadow-2xl rounded-xl transition-[width] duration-300 ease-out"
               style={{ width: widths[device], maxWidth: "100%" }}
             >
               <PortfolioRenderer
