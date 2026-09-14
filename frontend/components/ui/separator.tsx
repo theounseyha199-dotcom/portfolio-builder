@@ -1,1 +1,25 @@
-import { type HTMLAttributes } from "react"; import { cn } from "@/lib/utils"; export function Separator({className,...props}:HTMLAttributes<HTMLDivElement>){return <div role="separator" className={cn("my-4 h-px bg-border",className)} {...props}/>;}
+import { type HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
+
+export interface SeparatorProps extends HTMLAttributes<HTMLDivElement> {
+  orientation?: "horizontal" | "vertical";
+}
+
+export function Separator({
+  className,
+  orientation = "horizontal",
+  ...props
+}: SeparatorProps) {
+  return (
+    <div
+      role="separator"
+      aria-orientation={orientation}
+      className={cn(
+        "shrink-0 bg-slate-200/80",
+        orientation === "horizontal" ? "h-px w-full my-4" : "h-full w-px mx-2",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
