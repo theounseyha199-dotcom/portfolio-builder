@@ -416,3 +416,69 @@ limitations are outside this milestone: the supplied personal account still
 needs a portfolio created before it can use the builder, production deployment
 secrets must be supplied externally, and the existing dependency/JVM warnings
 documented above remain scheduled hardening work.
+
+# Milestone 8 — UI/UX Redesign & Experience Transformation — 2026-09-14
+
+## Completed
+
+- **Design System & Token Architecture**:
+  - Unified CSS custom properties in `frontend/app/globals.css` (`--app-bg`, `--app-card`, `--app-surface`, `--app-border`, `--app-text`, `--app-muted`, `--app-primary`, `--app-radius-*`).
+  - Standardized primary brand color to a restrained professional blue (`#1d4ed8` / hover `#1e40af`).
+  - Standardized core component primitives (`Button`, `Input`, `Textarea`, `Badge`, `Card`, `AlertDialog`, `Alert`, `Separator`).
+  - Added `disabled` prop support to `AlertDialogCancel` and `AlertDialogAction`.
+- **Landing Page (`/`)**:
+  - Transformed into a high-conversion SaaS landing page featuring a realistic dark builder hero mockup, 4-step workflow guide, 3 featured templates, key benefits, and clean footer.
+  - Verified responsive layout across 1440px, 1280px, 1024px, 768px, 390px, and 375px with zero horizontal scroll overflow.
+- **Dashboard (`/dashboard`)**:
+  - Replaced placeholder analytics with a focused workspace overview.
+  - Added live portfolio status pill (`PUBLISHED` / `DRAFT`), active template tag, real-time completeness progress bar, and actual item counts (projects, experiences, skills, education).
+- **Visual Builder Shell (`/dashboard/builder`)**:
+  - Implemented a 3-column layout on desktop with sticky topbar, sidebar tool groups (`CONTENT`, `IMPORT`, `DESIGN`, `SETTINGS`), and centered canvas.
+  - Added `← Dashboard` back navigation, subtle save state indicator (`• Saved`, `Saving…`, `Unsaved changes`, `Save failed`), and copy public link button.
+  - Implemented responsive mobile builder mode with segmented `Editor ({section})` vs `Live Preview` tabs and single-tap panel selector dropdown.
+  - Centered preview canvas with realistic device viewport frames (`w-[768px]`, `w-[390px]`, and 100%).
+- **Content Manager**:
+  - Modernized dense lists into collapsed, scannable item cards with dates and status badges.
+  - Switched editing and creation to modal dialogs to preserve scroll context and prevent layout jumps.
+  - Added `AlertDialog` confirmation for safe deletion.
+- **Template Gallery (`/templates` & Builder)**:
+  - Upgraded cards with realistic wireframe mockups, color swatches, and tier badges.
+  - Added interactive full-screen preview modal with real-time device switching (`Desktop`, `Tablet`, `Mobile`).
+- **Design Controls (Style & Sections Panels)**:
+  - Added 5 curated style presets (`Clean`, `Midnight`, `Warm`, `Editorial`, `Slate`) that update color and typography tokens in sync.
+  - Added real-time contrast calculation with low-contrast warning banner (< 4.5:1).
+  - Added quick brand palette swatches and validated hex inputs.
+  - Added "Reset to template defaults" with confirmation `AlertDialog`.
+  - Upgraded Sections panel with section icons, "Required" badge for Hero (replacing disabled checkbox), instant Up/Down reordering with immediate canvas reflection, and layout style dropdowns.
+- **Responsive Portfolio Templates**:
+  - Added responsive mobile navigation drawer menu (`Menu` / `X` toggle) to `TemplateLayout`.
+  - Added rich date hierarchy to Experience items (`Jan 2023 — Present`, location indicators).
+  - Added project links with icons (`ExternalLink` for live demos, `Github` for source code) and technology pills.
+  - Added template differentiation accents (Developer monospace tags, Creative display headings, Modern cards, Professional timeline rule, Student chips).
+  - Added clean portfolio footer.
+
+## Verification
+
+| Check | Result |
+| --- | --- |
+| `frontend/npm run lint` | Passed — 0 errors and 0 warnings |
+| `frontend/npm run test` | Passed — 8 test files, 31 tests |
+| Clean `frontend/npm run build` | Passed — Next.js 15.5.25 (8/8 routes generated) |
+| `backend/./mvnw clean verify` | Passed — 43 tests, 0 failures, 0 errors, 0 skipped |
+| `docker compose config --quiet` | Passed |
+| Production Compose override config validation | Passed — expected unset-secret warnings without production environment values |
+| `docker compose build backend frontend` | Passed — both Docker images built successfully |
+| End-to-end Selenium QA (`/tmp/verify_milestone8.py`) | Passed across 1440px, 768px, and 390px viewports (Auth, Dashboard, Builder, Presets, Device Switcher, Public Portfolio, Mobile Drawer) |
+
+## Commits Pushed to `origin/main`
+
+All commits created using git identity `Theoun SeyHa <theounseyha199@gmail.com>` and pushed to `origin main`:
+
+1. `1637aa7` — `refactor: unify portfolia design system`
+2. `4392fc4` — `refactor: polish landing and dashboard design`
+3. `505ccfb` — `refactor: improve portfolio builder ux`
+4. `624ba60` — `refactor: polish template gallery experience`
+5. `71bade3` — `refactor: improve portfolio design controls`
+6. `98680c6` — `refactor: polish responsive portfolio templates`
+7. `545b064` — `test: add design workflow regression coverage`
+
