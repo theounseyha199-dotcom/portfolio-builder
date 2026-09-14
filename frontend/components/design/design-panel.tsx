@@ -1,0 +1,14 @@
+"use client";
+import { useEffect, useState } from "react";
+import type { PortfolioTheme } from "@/components/portfolio/templates";
+import { Button } from "@/components/ui";
+import { portfolioFonts } from "@/lib/design/font-registry";
+
+export function DesignPanel({ value, busy, onChange, onSave }: { value: PortfolioTheme; busy: boolean; onChange: (theme: PortfolioTheme) => void; onSave: (theme: PortfolioTheme) => void | Promise<void> }) {
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+  function update<K extends keyof PortfolioTheme>(key: K, next: PortfolioTheme[K]) { const changed = { ...draft, [key]: next }; setDraft(changed); onChange(changed); }
+  const color = (key: "primaryColor" | "backgroundColor" | "surfaceColor" | "textColor" | "mutedTextColor", label: string) => <label className="block text-sm font-medium">{label}<div className="mt-1 flex items-center gap-2"><input aria-label={label} type="color" value={draft[key]} onChange={(e) => update(key, e.target.value)} className="h-10 w-14 rounded border" /><input aria-label={`${label} hex`} value={draft[key]} onChange={(e) => /^#[0-9a-fA-F]{0,6}$/.test(e.target.value) && update(key, e.target.value)} className="min-w-0 flex-1 rounded border px-2 py-2 font-mono text-xs" /></div></label>;
+  const select = <K extends keyof PortfolioTheme>(key: K, label: string, options: readonly string[]) => <label className="block text-sm font-medium">{label}<select aria-label={label} value={String(draft[key])} onChange={(e) => update(key, e.target.value as PortfolioTheme[K])} className="mt-1 w-full rounded border p-2">{options.map((option) => <option key={option} value={option}>{option[0].toUpperCase() + option.slice(1)}</option>)}</select></label>;
+  return <div className="space-y-5"><fieldset className="space-y-3"><legend className="mb-2 font-semibold">Theme</legend>{select("mode", "Theme mode", ["light", "dark"])}{color("primaryColor", "Primary color")}{color("backgroundColor", "Background color")}{color("surfaceColor", "Surface color")}{color("textColor", "Text color")}{color("mutedTextColor", "Muted text color")}</fieldset><fieldset className="space-y-3"><legend className="font-semibold">Typography</legend>{select("fontHeading", "Heading font", portfolioFonts.map((font) => font.id))}{select("fontBody", "Body font", portfolioFonts.map((font) => font.id))}</fieldset><fieldset className="space-y-3"><legend className="font-semibold">Layout</legend>{select("contentWidth", "Content width", ["narrow", "medium", "wide"])}{select("spacing", "Spacing", ["compact", "normal", "relaxed"])}{select("borderRadius", "Border radius", ["none", "small", "medium", "large"])}</fieldset><Button type="button" disabled={busy} onClick={() => void onSave(draft)} className="w-full">{busy ? "Saving…" : "Save design"}</Button></div>;
+}

@@ -9,6 +9,8 @@ import { BuilderSettingsPanel } from "@/components/builder/builder-settings-pane
 import { BuilderSidebar, type BuilderPanel } from "@/components/builder/builder-sidebar";
 import { BuilderTopbar } from "@/components/builder/builder-topbar";
 import { ContentManager } from "@/components/builder/content-manager";
+import { DesignPanel } from "@/components/design/design-panel";
+import { SectionsPanel } from "@/components/design/sections-panel";
 import { GitHubImportPanel } from "@/components/builder/github-import-panel";
 import { ResumeImportPanel } from "@/components/builder/resume-import-panel";
 import { TemplateGallery } from "@/components/builder/template-gallery";
@@ -17,7 +19,9 @@ import type { TemplateId } from "@/components/portfolio/templates";
 import { Button } from "@/components/ui";
 import { assetApi, type AssetInfo } from "@/features/content/assets";
 import type { Education, Experience, Project, Skill, SocialLink } from "@/features/content/types";
+import { useUpdatePortfolioDesignMutation, useUpdatePortfolioSectionsMutation } from "@/features/portfolio/design-api";
 import { api } from "@/lib/api";
+import { resolvePortfolioTheme } from "@/lib/design/theme-utils";
 import type { ApiResponse, Portfolio } from "@/types";
 type BuilderPortfolio = Portfolio & { profileImageUrl?: string };
 const content = {
@@ -29,6 +33,8 @@ const content = {
 } as const;
 export default function BuilderPage() {
   const { authenticated, login } = useAuth();
+  const [updatePortfolioDesign] = useUpdatePortfolioDesignMutation();
+  const [updatePortfolioSections] = useUpdatePortfolioSectionsMutation();
   const [section, setSection] = useState<BuilderPanel>("Profile"),
     [portfolio, setPortfolio] = useState<BuilderPortfolio | null>(null),
     [form, setForm] = useState({ slug: "", fullName: "", headline: "" }),
@@ -36,7 +42,8 @@ export default function BuilderPage() {
     [message, setMessage] = useState(""),
     [busy, setBusy] = useState(false),
     [device, setDevice] = useState<PreviewDevice>("desktop"),
-    [preview, setPreview] = useState<PortfolioData | null>(null);
+    [preview, setPreview] = useState<PortfolioData | null>(null),
+    [themeDraft, setThemeDraft] = useState<Theme>(defaultTheme);
   const load = async () => {
     try {
       const p = await api<ApiResponse<BuilderPortfolio>>("/api/portfolios/me");
@@ -56,7 +63,9 @@ export default function BuilderPage() {
         assetApi.resume(),
       ]);
       setResume(resumeAsset);
-      setPreview({ ...p.data, templateKey: p.data.templateKey as PortfolioData["templateKey"], experiences, educations, skills, projects, socialLinks, sections, resume: resumeAsset ? { available: true, url: resumeAsset.url } : { available: false } });
+      const renderPortfolio: PortfolioData = { ...p.data, templateKey: p.data.templateKey as PortfolioData["templateKey"], experiences, educations, skills, projects, socialLinks, sections, resume: resumeAsset ? { available: true, url: resumeAsset.url } : { available: false } };
+      setPreview(renderPortfolio);
+      setThemeDraft(resolvePortfolioTheme(renderPortfolio));
     } catch {
       setPortfolio(null);
       setResume(null);
@@ -148,9 +157,8 @@ export default function BuilderPage() {
     }
   }
   async function togglePublish() { if (!portfolio) return; setBusy(true); try { const action = portfolio.published ? "unpublish" : "publish"; const response = await api<ApiResponse<BuilderPortfolio>>(`/api/portfolios/${portfolio.id}/${action}`, { method: "POST" }); setPortfolio(response.data); await load(); } catch (e) { error(e, "Unable to update publishing."); } finally { setBusy(false); } }
-  const theme = (): Theme => { try { return { ...defaultTheme, ...JSON.parse(portfolio?.themeConfig ?? "{}") as Partial<Theme> }; } catch { return defaultTheme; } };
-  async function saveDesign(nextTemplate = portfolio?.templateKey ?? "minimal", nextTheme = theme()) { if (!portfolio) return; setBusy(true); try { await api<ApiResponse<BuilderPortfolio>>("/api/portfolios/me/design", { method: "PUT", body: JSON.stringify({ templateKey: nextTemplate, themeConfig: nextTheme }) }); await load(); } catch (e) { error(e, "Unable to save design changes."); } finally { setBusy(false); } }
-  async function saveSections(next: PortfolioSection[]) { if (!portfolio) return; setBusy(true); try { await api<ApiResponse<PortfolioSection[]>>("/api/portfolio-sections", { method: "PUT", body: JSON.stringify({ sections: next.map((item, index) => ({ ...item, position: index + 1 })) }) }); await load(); } catch (e) { error(e, "Unable to save section changes."); } finally { setBusy(false); } }
+  async function saveDesign(nextTemplate = portfolio?.templateKey ?? "modern", nextTheme = themeDraft) { if (!portfolio) return; setBusy(true); try { await updatePortfolioDesign({ templateKey: nextTemplate as TemplateId, themeConfig: nextTheme }).unwrap(); setMessage("Design saved."); await load(); } catch (e) { error(e, "Unable to save design changes."); } finally { setBusy(false); } }
+  async function saveSections(next: PortfolioSection[]) { if (!portfolio) return; setBusy(true); try { await updatePortfolioSections({ sections: next.map((item, index) => ({ ...item, position: index + 1 })) }).unwrap(); await load(); } catch (e) { error(e, "Unable to save section changes."); } finally { setBusy(false); } }
   if (!authenticated)
     return (
       <main className="p-10">
@@ -175,7 +183,7 @@ export default function BuilderPage() {
         <div className="hidden border-r lg:block"><BuilderSidebar active={section} onSelect={setSection} /></div>
         <div className="flex min-w-0 flex-col">
           <div className="flex gap-2 overflow-x-auto border-b bg-white p-2 lg:hidden"><BuilderDeviceSwitcher value={device} onChange={setDevice} /></div>
-          {preview ? <BuilderPreview portfolio={preview} device={device} /> : <div className="flex flex-1 items-center justify-center p-8 text-center text-muted">Save your profile to start your live preview.</div>}
+          {preview ? <BuilderPreview portfolio={preview} device={device} themeOverride={themeDraft} /> : <div className="flex flex-1 items-center justify-center p-8 text-center text-muted">Save your profile to start your live preview.</div>}
         </div>
         <BuilderSettingsPanel title={section}>
             {section === "Profile" ? (
@@ -321,9 +329,9 @@ export default function BuilderPage() {
             ) : section === "Templates" ? (
               preview && portfolio ? <TemplateGallery portfolio={preview} currentTemplate={(portfolio.templateKey || "minimal") as TemplateId} onApplied={load} /> : <p className="text-sm text-muted">Save your profile before choosing a template.</p>
             ) : section === "Style" ? (
-              <div className="space-y-4"><label className="block text-sm font-medium">Primary color<input aria-label="Primary color" type="color" value={theme().primaryColor} onChange={(event) => void saveDesign(undefined, { ...theme(), primaryColor: event.target.value })} className="mt-2 block h-10 w-full" /></label><label className="block text-sm font-medium">Color mode<select aria-label="Color mode" value={theme().mode} onChange={(event) => void saveDesign(undefined, { ...theme(), mode: event.target.value as Theme["mode"] })} className="mt-2 w-full rounded border p-2"><option value="light">Light</option><option value="dark">Dark</option></select></label><label className="block text-sm font-medium">Content width<select aria-label="Content width" value={theme().contentWidth} onChange={(event) => void saveDesign(undefined, { ...theme(), contentWidth: event.target.value as Theme["contentWidth"] })} className="mt-2 w-full rounded border p-2"><option value="narrow">Narrow</option><option value="medium">Medium</option><option value="wide">Wide</option></select></label></div>
+              <DesignPanel value={themeDraft} busy={busy} onChange={setThemeDraft} onSave={(next) => saveDesign(undefined, next)} />
             ) : section === "Sections" ? (
-              <div className="space-y-2">{(preview?.sections ?? []).map((item, index, all) => <div key={item.sectionType} className="flex items-center gap-2 rounded border p-2"><input aria-label={`Show ${item.sectionType}`} type="checkbox" checked={item.enabled} disabled={item.sectionType === "HERO" || busy} onChange={(event) => void saveSections(all.map((value) => value.sectionType === item.sectionType ? { ...value, enabled: event.target.checked } : value))} /><span className="flex-1 text-sm">{item.sectionType[0] + item.sectionType.slice(1).toLowerCase()}</span><Button type="button" className="px-2 py-1 text-xs" disabled={index === 0 || busy} onClick={() => { const next = [...all]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; void saveSections(next); }}>Up</Button><Button type="button" className="px-2 py-1 text-xs" disabled={index === all.length - 1 || busy} onClick={() => { const next = [...all]; [next[index], next[index + 1]] = [next[index + 1], next[index]]; void saveSections(next); }}>Down</Button></div>)}</div>
+              <SectionsPanel sections={preview?.sections ?? []} templateId={(portfolio?.templateKey || "modern") as TemplateId} busy={busy} onSave={saveSections}/>
             ) : section === "Portfolio" || section === "Publishing" ? (
               <div className="space-y-3 text-sm"><p>{portfolio ? `Your public address is /u/${portfolio.slug}` : "Create a portfolio from the Profile panel first."}</p>{portfolio && <Button type="button" disabled={busy} onClick={() => void togglePublish()}>{portfolio.published ? "Unpublish portfolio" : "Publish portfolio"}</Button>}</div>
             ) : (
