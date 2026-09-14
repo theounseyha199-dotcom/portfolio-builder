@@ -6,18 +6,40 @@ import {
   Calendar,
   ExternalLink,
   FileDown,
-  Github,
   GraduationCap,
   Mail,
   MapPin,
   Menu,
   X,
 } from "lucide-react";
+import {
+  FaGithub,
+  FaLinkedin,
+  FaXTwitter,
+  FaInstagram,
+  FaYoutube,
+  FaDiscord,
+  FaDribbble,
+  FaGlobe,
+} from "react-icons/fa6";
+import { motion, useReducedMotion } from "@/lib/motion";
 import type {
   PortfolioSection,
   PortfolioSectionType,
   PortfolioTemplateProps,
 } from "../types";
+
+function SocialIcon({ platform }: { platform: string }) {
+  const p = platform.toLowerCase();
+  if (p.includes("github")) return <FaGithub size={14} className="shrink-0" />;
+  if (p.includes("linkedin")) return <FaLinkedin size={14} className="shrink-0 text-[#0a66c2]" />;
+  if (p.includes("twitter") || p.includes("x")) return <FaXTwitter size={14} className="shrink-0" />;
+  if (p.includes("instagram")) return <FaInstagram size={14} className="shrink-0 text-[#e4405f]" />;
+  if (p.includes("youtube")) return <FaYoutube size={14} className="shrink-0 text-[#ff0000]" />;
+  if (p.includes("discord")) return <FaDiscord size={14} className="shrink-0 text-[#5865f2]" />;
+  if (p.includes("dribbble")) return <FaDribbble size={14} className="shrink-0 text-[#ea4c89]" />;
+  return <FaGlobe size={14} className="shrink-0 opacity-80" />;
+}
 
 type Variant =
   | "minimal"
@@ -256,14 +278,19 @@ function TemplateSection({
   portfolio: PortfolioTemplateProps["portfolio"];
   variant: Variant;
 }) {
+  const prefersReducedMotion = useReducedMotion();
   const type = section.sectionType;
   const card =
     "rounded-[var(--portfolio-radius)] border border-current/10 bg-[var(--portfolio-surface)]";
 
   const wrap = (title: string, children: React.ReactNode) => (
-    <section
+    <motion.section
       id={`portfolio-${type.toLowerCase()}`}
       aria-labelledby={`${type.toLowerCase()}-heading`}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.3, ease: "easeOut" }}
       className="scroll-mt-20 py-[calc(var(--portfolio-section-gap)/2)]"
     >
       <div className="mb-6 flex items-center gap-3">
@@ -285,14 +312,17 @@ function TemplateSection({
         )}
       </div>
       {children}
-    </section>
+    </motion.section>
   );
 
   // HERO SECTION
   if (type === "HERO") {
     return (
-      <header
+      <motion.header
         id="portfolio-hero"
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
         className={`py-[var(--portfolio-section-gap)] ${
           variant === "modern"
             ? `${card} my-6 px-6 text-center sm:px-12`
@@ -380,7 +410,7 @@ function TemplateSection({
             )}
           </div>
         </div>
-      </header>
+      </motion.header>
     );
   }
 
@@ -540,16 +570,26 @@ function TemplateSection({
         }
       >
         {portfolio.skills.map((skill) => (
-          <span
+          <motion.span
             key={skill.id}
-            className={`${card} px-3 py-1.5 text-xs font-semibold ${
+            whileHover={
+              prefersReducedMotion
+                ? undefined
+                : variant === "student"
+                ? { scale: 1.05 }
+                : variant === "developer"
+                ? { y: -1, scale: 1.02 }
+                : { scale: 1.02 }
+            }
+            transition={{ duration: 0.15 }}
+            className={`${card} px-3 py-1.5 text-xs font-semibold cursor-default ${
               variant === "developer"
                 ? "font-mono border-[var(--portfolio-primary)]/30 text-[var(--portfolio-primary)]"
                 : ""
             }`}
           >
             {variant === "developer" ? `<${skill.name}>` : skill.name}
-          </span>
+          </motion.span>
         ))}
       </div>
     );
@@ -572,9 +612,19 @@ function TemplateSection({
           .slice()
           .sort((a, b) => Number(b.featured) - Number(a.featured))
           .map((project, index) => (
-            <article
+            <motion.article
               key={project.id}
-              className={`${card} flex flex-col justify-between overflow-hidden transition-transform hover:-translate-y-0.5 ${
+              whileHover={
+                prefersReducedMotion
+                  ? undefined
+                  : variant === "creative"
+                  ? { y: -4, scale: 1.01 }
+                  : variant === "modern"
+                  ? { y: -3 }
+                  : { y: -2 }
+              }
+              transition={{ duration: 0.2 }}
+              className={`${card} flex flex-col justify-between overflow-hidden transition-shadow ${
                 variant === "creative" && index === 0 ? "sm:col-span-2" : ""
               }`}
             >
@@ -628,7 +678,7 @@ function TemplateSection({
                         href={project.demoUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[var(--portfolio-primary)] hover:underline"
+                        className="inline-flex items-center gap-1.5 text-[var(--portfolio-primary)] hover:underline"
                       >
                         <ExternalLink size={13} />
                         <span>Live demo</span>
@@ -639,16 +689,16 @@ function TemplateSection({
                         href={project.githubUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 opacity-75 hover:opacity-100 hover:underline"
+                        className="inline-flex items-center gap-1.5 opacity-75 hover:opacity-100 hover:underline"
                       >
-                        <Github size={13} />
+                        <FaGithub size={13} />
                         <span>Source code</span>
                       </a>
                     )}
                   </div>
                 )}
               </div>
-            </article>
+            </motion.article>
           ))}
       </div>
     );
@@ -672,15 +722,11 @@ function TemplateSection({
           <a
             key={item.id}
             href={item.url}
-            className="inline-flex items-center gap-1.5 rounded-[var(--portfolio-radius)] border border-current/15 px-4 py-2 text-xs font-semibold opacity-80 hover:opacity-100 hover:bg-current/5 transition-colors"
+            className="inline-flex items-center gap-2 rounded-[var(--portfolio-radius)] border border-current/15 px-4 py-2 text-xs font-semibold opacity-80 hover:opacity-100 hover:bg-current/5 transition-colors"
             target="_blank"
             rel="noreferrer"
           >
-            {item.platform.toLowerCase().includes("github") ? (
-              <Github size={14} />
-            ) : (
-              <ExternalLink size={13} />
-            )}
+            <SocialIcon platform={item.platform} />
             <span>{item.platform}</span>
           </a>
         ))}
