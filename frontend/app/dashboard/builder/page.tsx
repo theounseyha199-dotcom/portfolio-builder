@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { WritingAssistant } from "@/components/ai/writing-assistant";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import {
@@ -28,7 +29,7 @@ import {
   type Theme,
 } from "@/components/portfolio/renderer/portfolio-renderer";
 import type { TemplateId } from "@/components/portfolio/templates";
-import { Button, Input, Label } from "@/components/ui";
+import { Button, Input, Label, Textarea } from "@/components/ui";
 import { assetApi, type AssetInfo } from "@/features/content/assets";
 import type { Education, Experience, Project, Skill, SocialLink } from "@/features/content/types";
 import {
@@ -60,7 +61,7 @@ function BuilderContent() {
     parsePanelQuery(searchParams.get("panel"))
   );
   const [portfolio, setPortfolio] = useState<BuilderPortfolio | null>(null);
-  const [form, setForm] = useState({ slug: "", fullName: "", headline: "" });
+  const [form, setForm] = useState({ slug: "", fullName: "", headline: "", bio: "" });
   const [resume, setResume] = useState<AssetInfo | null>(null);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -85,6 +86,7 @@ function BuilderContent() {
         slug: p.data.slug,
         fullName: p.data.fullName,
         headline: p.data.headline ?? "",
+        bio: p.data.bio ?? "",
       });
 
       const [experiences, educations, skills, projects, socialLinks, sections, resumeAsset] =
@@ -529,6 +531,11 @@ function BuilderContent() {
                       className="mt-1.5"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="prof-bio">Bio / About</Label>
+                    <Textarea id="prof-bio" value={form.bio} onChange={e => { setForm(current => ({ ...current, bio: e.target.value })); setSaveStatus("unsaved"); }} className="mt-1.5"/>
+                    <WritingAssistant target="PROFILE_BIO" text={form.bio} onAccept={bio => { setForm(current => ({ ...current, bio })); setSaveStatus("unsaved"); }}/>
+                  </div>
                 </div>
 
                 <div className="pt-2">
@@ -695,4 +702,3 @@ export default function BuilderPage() {
     </Suspense>
   );
 }
-
