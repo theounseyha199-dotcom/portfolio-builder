@@ -263,3 +263,91 @@ refresh, completeness refresh, or preview rendering was claimed as verified.
 Milestone 6B remains **in progress**. The missing evidence is the real
 authenticated end-to-end browser flow; all source-level, test, build, and
 Docker checks listed above have passed.
+
+# Portfolio Template System and Customization Architecture — 2026-09-14
+
+## Implemented
+
+- Established one shared `PortfolioRenderData` content contract for every
+  template. No template-specific content models or duplicate portfolio stores
+  were introduced.
+- Centralized all six templates in `PORTFOLIO_TEMPLATES`, including controlled
+  default themes, categories, tiers, recommendations, section orders, and
+  supported section layouts.
+- Added Minimal, Developer, Modern, Professional, Creative, and Student
+  presentations with different content priorities and visual treatments.
+- Centralized rendering through one `PortfolioRenderer`. Builder, template
+  previews, and public portfolios use the same renderer.
+- Added `templateOverride` and `themeOverride` renderer inputs. Previewing a
+  template does not mutate or persist the portfolio.
+- Added controlled CSS theme variables for primary, background, surface, text,
+  muted text, radius, content width, spacing, heading font, and body font.
+- Added a controlled font registry. Arbitrary remote fonts, CSS, HTML, and
+  JavaScript are not accepted.
+- Added the public `/templates` gallery with category filters and Desktop,
+  Tablet, and Mobile previews. Marketing preview content remains static and is
+  never written to a user portfolio.
+- Updated the landing-page template links to route to `/templates`.
+- Added the builder Templates panel with current-template status, preview,
+  confirmation, and persistence through RTK Query.
+- Added a separate Style panel with instant local preview and explicit Save.
+  It controls mode, five color tokens, heading/body fonts, content width,
+  spacing, and border radius.
+- Added a Sections panel for visibility, ordering, and only the layouts
+  supported by the selected template. The Hero section remains mandatory.
+- Empty content sections and their navigation links are not rendered.
+- Added backend validation for the six supported template IDs, controlled
+  theme values, section types, layout identifiers, alignment, background, and
+  spacing.
+- Extended public portfolio responses with the saved template, theme, and
+  section configuration, so `/u/{slug}` uses the same saved design as Builder.
+- Added Flyway migration `V7__portfolio_design_tokens.sql`; it adds normalized
+  section style fields, migrates `CONTACT` to `SOCIAL`, and adds `RESUME`
+  configuration without duplicating existing portfolio tables.
+- Design and section mutations use RTK Query with portfolio preview/design tag
+  invalidation. No page reload is used.
+
+## Verification
+
+| Check | Result |
+| --- | --- |
+| `frontend/npm run lint` | Passed — 0 errors and 0 warnings |
+| `frontend/npm run test` | Passed — 8 files, 27 tests |
+| Clean `frontend/npm run build` | Passed — Next.js 15.5.25 |
+| `backend/./mvnw clean verify` | Passed |
+| Development Compose config | Passed |
+| Production Compose config | Passed; expected unset-secret warnings were emitted without production environment values |
+| `docker compose build backend frontend` | Passed |
+| Flyway migration | Passed — schema advanced from V6 to V7 |
+| Docker backend health | Passed: `{"status":"success","message":"Service is healthy.","data":"ok"}` |
+| Public `/templates` route | Passed — HTTP 200 |
+
+Frontend regression coverage includes registry completeness, rendering all
+templates from the shared content contract, temporary preview override,
+non-persisting preview, confirmed template persistence, current-template
+indication, theme live-preview/save separation, section visibility and order,
+supported section layouts, empty-section behavior, and preview device changes.
+Backend coverage includes valid and invalid template validation, content
+preservation during template changes, controlled theme persistence, owned
+portfolio resolution, and section order/visibility/style persistence.
+
+## Runtime status and outstanding manual evidence
+
+- The rebuilt verification containers are healthy on temporary host ports:
+  frontend `13000`, backend `18081`, Keycloak `8082`, and PostgreSQL `5434`.
+- A user-started Maven/Spring process (`PID 8054`) occupies host port `8081`.
+  It was intentionally not terminated. This prevented binding the rebuilt
+  Docker backend to the normal host port, so temporary verification ports were
+  used.
+- The real authenticated browser workflow remains pending. No login session or
+  real user credentials were available to verify template selection, reload
+  persistence, theme persistence, section changes, publishing, and the final
+  `/u/{slug}` result end to end.
+- Git delivery remains pending. The configured identity is
+  `Theoun SeyHa <theounseyha199@gmail.com>`, but neither the workspace `.git`
+  database nor the previously used `/tmp/portfolio-builder-git-meta` database
+  exists in this session. Consequently, no commits or pushes were claimed.
+
+The implementation and automated verification are complete. The milestone is
+not marked fully complete until the authenticated workflow is exercised and
+Git metadata is restored for the requested logical commits and pushes.
