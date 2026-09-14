@@ -53,6 +53,39 @@ export const panelIcons: Record<BuilderPanel, LucideIcon> = {
   Publishing: Radio,
 };
 
+const PANEL_QUERY_MAP: Record<string, BuilderPanel> = {
+  profile: "Profile",
+  "resume-import": "Resume Import",
+  resumeimport: "Resume Import",
+  github: "GitHub",
+  templates: "Templates",
+  template: "Templates",
+  style: "Style",
+  design: "Style",
+  sections: "Sections",
+  section: "Sections",
+  experience: "Experience",
+  experiences: "Experience",
+  education: "Education",
+  educations: "Education",
+  skills: "Skills",
+  skill: "Skills",
+  projects: "Projects",
+  project: "Projects",
+  "social-links": "Social Links",
+  social: "Social Links",
+  resume: "Resume",
+  publishing: "Publishing",
+  publish: "Publishing",
+  portfolio: "Portfolio",
+};
+
+export function parsePanelQuery(param: string | null): BuilderPanel {
+  if (!param) return "Profile";
+  const normalized = param.toLowerCase().trim();
+  return PANEL_QUERY_MAP[normalized] ?? "Profile";
+}
+
 const groups: Array<{ label: string; panels: BuilderPanel[] }> = [
   {
     label: "CONTENT",

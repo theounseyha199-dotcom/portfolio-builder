@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import {
   FileText,
   Save,
@@ -12,7 +13,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { type PreviewDevice } from "@/components/builder/builder-device-switcher";
 import { BuilderPreview } from "@/components/builder/builder-preview";
 import { BuilderSettingsPanel } from "@/components/builder/builder-settings-panel";
-import { BuilderMobileNavigation, BuilderSidebar, type BuilderPanel } from "@/components/builder/builder-sidebar";
+import { BuilderMobileNavigation, BuilderSidebar, parsePanelQuery, type BuilderPanel } from "@/components/builder/builder-sidebar";
 import { BuilderTopbar, type SaveState } from "@/components/builder/builder-topbar";
 import { ContentManager } from "@/components/builder/content-manager";
 import { GitHubImportPanel } from "@/components/builder/github-import-panel";
@@ -48,12 +49,16 @@ const content = {
   "Social Links": "social-links",
 } as const;
 
-export default function BuilderPage() {
+function BuilderContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { authenticated, login } = useAuth();
   const [updatePortfolioDesign] = useUpdatePortfolioDesignMutation();
   const [updatePortfolioSections] = useUpdatePortfolioSectionsMutation();
 
-  const [section, setSection] = useState<BuilderPanel>("Profile");
+  const [section, setSection] = useState<BuilderPanel>(() =>
+    parsePanelQuery(searchParams.get("panel"))
+  );
   const [portfolio, setPortfolio] = useState<BuilderPortfolio | null>(null);
   const [form, setForm] = useState({ slug: "", fullName: "", headline: "" });
   const [resume, setResume] = useState<AssetInfo | null>(null);
@@ -65,7 +70,14 @@ export default function BuilderPage() {
   const [themeDraft, setThemeDraft] = useState<Theme>(defaultTheme);
   const [mobileTab, setMobileTab] = useState<"preview" | "editor">("editor");
 
-  const load = async () => {
+  useEffect(() => {
+    const param = searchParams.get("panel");
+    if (param) {
+      setSection(parsePanelQuery(param));
+    }
+  }, [searchParams]);
+
+  const load = useCallback(async () => {
     try {
       const p = await api<ApiResponse<BuilderPortfolio>>("/api/portfolios/me");
       setPortfolio(p.data);
@@ -107,12 +119,15 @@ export default function BuilderPage() {
       setPortfolio(null);
       setResume(null);
       setPreview(null);
+      if (authenticated) {
+        router.replace("/dashboard/onboarding");
+      }
     }
-  };
+  }, [authenticated, router]);
 
   useEffect(() => {
     if (authenticated) void load();
-  }, [authenticated]);
+  }, [authenticated, load]);
 
   const error = (e: unknown, fallback: string) => {
     setMessage(e instanceof Error ? e.message : fallback);
@@ -289,7 +304,7 @@ export default function BuilderPage() {
           <p className="mt-2 text-sm text-slate-600">
             Please authenticate to access your portfolio workspace.
           </p>
-          <Button onClick={login} size="lg" className="mt-6 w-full justify-center">
+          <Button onClick={() => login()} size="lg" className="mt-6 w-full justify-center">
             Log in with Keycloak
           </Button>
         </div>
@@ -666,3 +681,18 @@ export default function BuilderPage() {
     </main>
   );
 }
+
+export default function BuilderPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-100">
+          <div className="h-8 w-48 rounded bg-slate-200 animate-pulse" />
+        </div>
+      }
+    >
+      <BuilderContent />
+    </Suspense>
+  );
+}
+
