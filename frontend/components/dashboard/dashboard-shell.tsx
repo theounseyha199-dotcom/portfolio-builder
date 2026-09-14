@@ -220,10 +220,10 @@ export function DashboardShell() {
           <EmptyState
             icon={BriefcaseBusiness}
             title="Create your professional portfolio"
-            description="Import your resume, connect GitHub, or start from scratch. Build and publish your tailored showcase in minutes."
+            description="Turn your experience, projects, and skills into a portfolio you can share anywhere."
             primaryAction={
               <Link
-                href="/dashboard/builder"
+                href="/dashboard/onboarding"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-xs hover:bg-blue-700 transition-colors"
               >
                 <Plus size={16} />
@@ -244,7 +244,7 @@ export function DashboardShell() {
           {/* Guided Path Cards */}
           <div className="grid gap-4 sm:grid-cols-3">
             <Link
-              href="/dashboard/builder"
+              href="/dashboard/onboarding?start=manual"
               className="group rounded-2xl border border-slate-200/80 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-sm"
             >
               <span className="flex size-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-700 group-hover:text-primary group-hover:border-primary/30">
@@ -259,7 +259,7 @@ export function DashboardShell() {
             </Link>
 
             <Link
-              href="/dashboard/builder"
+              href="/dashboard/onboarding?start=resume"
               className="group rounded-2xl border border-slate-200/80 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-sm"
             >
               <span className="flex size-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-700 group-hover:text-primary group-hover:border-primary/30">
@@ -274,7 +274,7 @@ export function DashboardShell() {
             </Link>
 
             <Link
-              href="/dashboard/builder"
+              href="/dashboard/onboarding?start=github"
               className="group rounded-2xl border border-slate-200/80 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-sm"
             >
               <span className="flex size-9 items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-700 group-hover:text-primary group-hover:border-primary/30">
