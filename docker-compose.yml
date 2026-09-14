@@ -64,6 +64,11 @@ services:
       GITHUB_REDIRECT_URI: ${GITHUB_REDIRECT_URI:-http://localhost:8081/api/integrations/github/callback}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
       APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:-}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_MODEL: ${AI_MODEL:-}
+      AI_TIMEOUT_SECONDS: ${AI_TIMEOUT_SECONDS:-15}
+      AI_MAX_INPUT_LENGTH: ${AI_MAX_INPUT_LENGTH:-5000}
       SERVER_PORT: 8081
     ports:
       - "${BACKEND_PORT:-8081}:8081"
