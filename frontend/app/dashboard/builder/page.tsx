@@ -6,7 +6,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { BuilderDeviceSwitcher, type PreviewDevice } from "@/components/builder/builder-device-switcher";
 import { BuilderPreview } from "@/components/builder/builder-preview";
 import { BuilderSettingsPanel } from "@/components/builder/builder-settings-panel";
-import { BuilderSidebar, type BuilderPanel } from "@/components/builder/builder-sidebar";
+import { BuilderMobileNavigation, BuilderSidebar, type BuilderPanel } from "@/components/builder/builder-sidebar";
 import { BuilderTopbar } from "@/components/builder/builder-topbar";
 import { ContentManager } from "@/components/builder/content-manager";
 import { DesignPanel } from "@/components/design/design-panel";
@@ -92,6 +92,7 @@ export default function BuilderPage() {
           });
       setPortfolio(response.data);
       setMessage("Profile saved.");
+      await load();
     } catch (e) {
       error(e, "Unable to save profile.");
     } finally {
@@ -158,7 +159,7 @@ export default function BuilderPage() {
   }
   async function togglePublish() { if (!portfolio) return; setBusy(true); try { const action = portfolio.published ? "unpublish" : "publish"; const response = await api<ApiResponse<BuilderPortfolio>>(`/api/portfolios/${portfolio.id}/${action}`, { method: "POST" }); setPortfolio(response.data); await load(); } catch (e) { error(e, "Unable to update publishing."); } finally { setBusy(false); } }
   async function saveDesign(nextTemplate = portfolio?.templateKey ?? "modern", nextTheme = themeDraft) { if (!portfolio) return; setBusy(true); try { await updatePortfolioDesign({ templateKey: nextTemplate as TemplateId, themeConfig: nextTheme }).unwrap(); setMessage("Design saved."); await load(); } catch (e) { error(e, "Unable to save design changes."); } finally { setBusy(false); } }
-  async function saveSections(next: PortfolioSection[]) { if (!portfolio) return; setBusy(true); try { await updatePortfolioSections({ sections: next.map((item, index) => ({ ...item, position: index + 1 })) }).unwrap(); await load(); } catch (e) { error(e, "Unable to save section changes."); } finally { setBusy(false); } }
+  async function saveSections(next: PortfolioSection[]) { if (!portfolio) return; setBusy(true); try { await updatePortfolioSections({ sections: next.map((item, index) => ({ ...item, position: index + 1 })) }).unwrap(); setMessage("Sections saved."); await load(); } catch (e) { error(e, "Unable to save section changes."); } finally { setBusy(false); } }
   if (!authenticated)
     return (
       <main className="p-10">
@@ -179,6 +180,7 @@ export default function BuilderPage() {
   return (
     <main className="min-h-screen bg-surface">
       <BuilderTopbar name={portfolio?.fullName ?? form.fullName} published={Boolean(portfolio?.published)} slug={portfolio?.slug} device={device} onDeviceChange={setDevice} onPreview={() => { if (portfolio) window.open(`/u/${portfolio.slug}`, "_blank", "noopener,noreferrer"); }} onPublish={() => void togglePublish()} />
+      <div className="border-b bg-white p-3 lg:hidden"><BuilderMobileNavigation active={section} onSelect={setSection}/></div>
       <div className="grid min-h-[calc(100vh-73px)] lg:grid-cols-[220px_minmax(0,1fr)_360px]">
         <div className="hidden border-r lg:block"><BuilderSidebar active={section} onSelect={setSection} /></div>
         <div className="flex min-w-0 flex-col">
@@ -186,6 +188,7 @@ export default function BuilderPage() {
           {preview ? <BuilderPreview portfolio={preview} device={device} themeOverride={themeDraft} /> : <div className="flex flex-1 items-center justify-center p-8 text-center text-muted">Save your profile to start your live preview.</div>}
         </div>
         <BuilderSettingsPanel title={section}>
+            {message && <p role="status" className="mb-4 rounded-lg bg-surface p-3 text-sm text-primary">{message}</p>}
             {section === "Profile" ? (
               <form
                 id="portfolio-form"
