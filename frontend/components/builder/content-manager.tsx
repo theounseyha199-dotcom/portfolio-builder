@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { WritingAssistant } from "@/components/ai/writing-assistant";
 import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
@@ -426,6 +427,7 @@ function EntryForm({
     category: item?.category ?? "",
     title: item?.title ?? "",
     shortDescription: item?.shortDescription ?? item?.description ?? "",
+    description: item?.description ?? "",
     githubUrl: item?.githubUrl ?? "",
     demoUrl: item?.demoUrl ?? "",
     technologies: (item?.technologies ?? []).join(", "),
@@ -565,16 +567,17 @@ function EntryForm({
                 <Label htmlFor="exp-desc">Description</Label>
                 <Textarea
                   id="exp-desc"
-                  value={text("shortDescription")}
+                  value={text("description")}
                   onChange={(e) =>
                     setValues((curr) => ({
                       ...curr,
-                      shortDescription: e.target.value,
+                      description: e.target.value,
                     }))
                   }
                   placeholder="Key accomplishments and responsibilities…"
                   className="mt-1.5"
                 />
+                <WritingAssistant target="EXPERIENCE_DESCRIPTION" text={text("description")} onAccept={description => setValues(current => ({ ...current, description }))}/>
               </div>
             </>
           )}
@@ -712,6 +715,7 @@ function EntryForm({
                   placeholder="Describe the problem, your solution, and measurable results…"
                   className="mt-1.5"
                 />
+                <WritingAssistant target="PROJECT_DESCRIPTION" text={text("shortDescription")} onAccept={shortDescription => setValues(current => ({ ...current, shortDescription }))}/>
               </div>
 
               <div>
