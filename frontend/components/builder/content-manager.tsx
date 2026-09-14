@@ -28,6 +28,7 @@ import {
 } from "@/components/ui";
 import { assetApi } from "@/features/content/assets";
 import { contentApi } from "@/features/content/api";
+import { motion, AnimatePresence, useReducedMotion } from "@/lib/motion";
 
 type Kind = "experiences" | "educations" | "skills" | "projects" | "social-links";
 
@@ -67,6 +68,7 @@ const labels: Record<Kind, { singular: string; plural: string; addText: string }
 };
 
 export function ContentManager({ kind }: { kind: Kind }) {
+  const prefersReducedMotion = useReducedMotion();
   const [items, setItems] = useState<ContentItem[]>([]);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [isAdding, setIsAdding] = useState(false);
@@ -180,92 +182,99 @@ export function ContentManager({ kind }: { kind: Kind }) {
             </Button>
           </div>
         ) : (
-          items.map((item) => (
-            <article
-              key={item.id}
-              className="group rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs hover:border-slate-300 transition-all"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-sm text-slate-900 truncate">
-                      {item.title ??
-                        item.company ??
-                        item.school ??
-                        item.name ??
-                        item.platform}
+          <AnimatePresence mode="popLayout" initial={false}>
+            {items.map((item) => (
+              <motion.article
+                key={item.id}
+                layout={!prefersReducedMotion}
+                initial={prefersReducedMotion ? false : { opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={prefersReducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.18 }}
+                className="group rounded-xl border border-slate-200/80 bg-white p-4 shadow-2xs hover:border-slate-300 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-bold text-sm text-slate-900 truncate">
+                        {item.title ??
+                          item.company ??
+                          item.school ??
+                          item.name ??
+                          item.platform}
+                      </p>
+                      {item.featured && (
+                        <Badge variant="primary" className="text-[10px] py-0">
+                          Featured
+                        </Badge>
+                      )}
+                    </div>
+
+                    <p className="text-xs text-slate-600 truncate">
+                      {item.position ??
+                        item.degree ??
+                        item.shortDescription ??
+                        item.category ??
+                        item.url}
                     </p>
-                    {item.featured && (
-                      <Badge variant="primary" className="text-[10px] py-0">
-                        Featured
-                      </Badge>
+
+                    {(item.startDate || item.endDate || item.currentlyWorking) && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
+                        <Calendar size={12} />
+                        <span>
+                          {item.startDate ?? ""}
+                          {item.startDate ? " — " : ""}
+                          {item.currentlyWorking
+                            ? "Present"
+                            : (item.endDate ?? "")}
+                        </span>
+                      </div>
+                    )}
+
+                    {item.technologies && item.technologies.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {item.technologies.map((t) => (
+                          <span
+                            key={t}
+                            className="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-primary border border-blue-100"
+                          >
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {kind === "projects" && (
+                      <ProjectImage item={item} onChange={load} onError={setError} />
                     )}
                   </div>
 
-                  <p className="text-xs text-slate-600 truncate">
-                    {item.position ??
-                      item.degree ??
-                      item.shortDescription ??
-                      item.category ??
-                      item.url}
-                  </p>
-
-                  {(item.startDate || item.endDate || item.currentlyWorking) && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium">
-                      <Calendar size={12} />
-                      <span>
-                        {item.startDate ?? ""}
-                        {item.startDate ? " — " : ""}
-                        {item.currentlyWorking
-                          ? "Present"
-                          : (item.endDate ?? "")}
-                      </span>
-                    </div>
-                  )}
-
-                  {item.technologies && item.technologies.length > 0 && (
-                    <div className="flex flex-wrap gap-1 pt-1">
-                      {item.technologies.map((t) => (
-                        <span
-                          key={t}
-                          className="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-primary border border-blue-100"
-                        >
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {kind === "projects" && (
-                    <ProjectImage item={item} onChange={load} onError={setError} />
-                  )}
+                  {/* Edit & Delete Actions */}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      aria-label={`Edit ${item.title ?? item.company ?? item.school ?? item.name ?? "item"}`}
+                      onClick={() => {
+                        setIsAdding(false);
+                        setEditingItem(item);
+                      }}
+                      className="rounded-lg p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${item.title ?? item.company ?? item.school ?? item.name ?? "item"}`}
+                      onClick={() => setDeleteTarget(item)}
+                      className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
                 </div>
-
-                {/* Edit & Delete Actions */}
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    aria-label={`Edit ${item.title ?? item.company ?? item.school ?? item.name ?? "item"}`}
-                    onClick={() => {
-                      setIsAdding(false);
-                      setEditingItem(item);
-                    }}
-                    className="rounded-lg p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-                  >
-                    <Pencil size={15} />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`Delete ${item.title ?? item.company ?? item.school ?? item.name ?? "item"}`}
-                    onClick={() => setDeleteTarget(item)}
-                    className="rounded-lg p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                  >
-                    <Trash2 size={15} />
-                  </button>
-                </div>
-              </div>
-            </article>
-          ))
+              </motion.article>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 

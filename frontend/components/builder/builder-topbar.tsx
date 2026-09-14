@@ -11,6 +11,7 @@ import {
   Send,
 } from "lucide-react";
 import { Badge, Button } from "@/components/ui";
+import { motion, useReducedMotion } from "@/lib/motion";
 import type { PreviewDevice } from "./builder-device-switcher";
 import { BuilderDeviceSwitcher } from "./builder-device-switcher";
 
@@ -38,6 +39,7 @@ export function BuilderTopbar({
   onPublish: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   const copy = async () => {
     if (slug) {
@@ -81,25 +83,49 @@ export function BuilderTopbar({
             className="hidden md:flex items-center gap-1.5 text-xs font-medium pl-2"
           >
             {saveStatus === "saving" ? (
-              <span className="inline-flex items-center gap-1 text-primary">
+              <motion.span
+                key="saving"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.15 }}
+                className="inline-flex items-center gap-1 text-primary"
+              >
                 <Loader2 size={12} className="animate-spin" />
                 <span>Saving…</span>
-              </span>
+              </motion.span>
             ) : saveStatus === "error" ? (
-              <span className="inline-flex items-center gap-1 text-red-600">
+              <motion.span
+                key="error"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.15 }}
+                className="inline-flex items-center gap-1 text-red-600"
+              >
                 <span className="size-1.5 rounded-full bg-red-600" />
                 <span>{saveMessage || "Save failed"}</span>
-              </span>
+              </motion.span>
             ) : saveStatus === "unsaved" ? (
-              <span className="inline-flex items-center gap-1 text-amber-600">
+              <motion.span
+                key="unsaved"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.15 }}
+                className="inline-flex items-center gap-1 text-amber-600"
+              >
                 <span className="size-1.5 rounded-full bg-amber-500" />
                 <span>Unsaved changes</span>
-              </span>
+              </motion.span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-slate-500">
+              <motion.span
+                key="saved"
+                initial={prefersReducedMotion ? false : { opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.15 }}
+                className="inline-flex items-center gap-1 text-slate-500"
+              >
                 <span className="size-1.5 rounded-full bg-emerald-500" />
                 <span>Saved</span>
-              </span>
+              </motion.span>
             )}
           </div>
         </div>

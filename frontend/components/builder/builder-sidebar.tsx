@@ -17,7 +17,8 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-import { Button, Separator } from "@/components/ui";
+import { Separator } from "@/components/ui";
+import { motion, useReducedMotion } from "@/lib/motion";
 
 export type BuilderPanel =
   | "Profile"
@@ -79,6 +80,8 @@ export function BuilderSidebar({
   active: BuilderPanel;
   onSelect: (panel: BuilderPanel) => void;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
     <nav
       className="h-full overflow-y-auto bg-white p-3 space-y-4"
@@ -95,24 +98,38 @@ export function BuilderSidebar({
               const Icon = panelIcons[panel];
               const isActive = active === panel;
               return (
-                <Button
+                <button
                   key={panel}
                   type="button"
-                  variant={isActive ? "secondary" : "ghost"}
-                  size="sm"
-                  className={
-                    isActive
-                      ? "w-full justify-start gap-2.5 bg-blue-50/90 text-primary font-semibold border-blue-200/80 shadow-xs h-9 px-3"
-                      : "w-full justify-start gap-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium h-9 px-3 border border-transparent"
-                  }
                   onClick={() => onSelect(panel)}
+                  className={`relative w-full flex items-center gap-2.5 rounded-lg h-9 px-3 text-xs font-semibold transition-colors cursor-pointer text-left ${
+                    isActive
+                      ? "text-primary"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
                 >
+                  {isActive && !prefersReducedMotion && (
+                    <motion.div
+                      layoutId="activeSidebarIndicator"
+                      className="absolute inset-0 rounded-lg bg-blue-50/90 border border-blue-200/80 shadow-xs"
+                      transition={{
+                        type: "spring",
+                        stiffness: 450,
+                        damping: 35,
+                      }}
+                    />
+                  )}
+                  {isActive && prefersReducedMotion && (
+                    <div className="absolute inset-0 rounded-lg bg-blue-50/90 border border-blue-200/80 shadow-xs" />
+                  )}
                   <Icon
                     size={16}
-                    className={isActive ? "text-primary" : "text-slate-400"}
+                    className={`relative z-10 shrink-0 ${
+                      isActive ? "text-primary" : "text-slate-400"
+                    }`}
                   />
-                  <span className="truncate">{panel}</span>
-                </Button>
+                  <span className="relative z-10 truncate">{panel}</span>
+                </button>
               );
             })}
           </div>
