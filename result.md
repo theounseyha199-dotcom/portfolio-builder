@@ -482,3 +482,85 @@ All commits created using git identity `Theoun SeyHa <theounseyha199@gmail.com>`
 6. `98680c6` — `refactor: polish responsive portfolio templates`
 7. `545b064` — `test: add design workflow regression coverage`
 
+# Milestone 9 — Premium Visual Enhancement Pass — 2026-09-14
+
+## Completed
+
+- **Visual Design Philosophy & Motion Architecture**:
+  - Maintained a calm, productive, and focused aesthetic: no rainbow buttons, no over-animation, no gaming aesthetics, no neon effects.
+  - Built `frontend/lib/motion.ts` standardizing motion curves and timing tokens: `TRANSITION_FAST` (0.15s), `TRANSITION_NORMAL` (0.22s), `TRANSITION_SLOW` (0.35s), `SPRING_GENTLE`, and `SPRING_RESPONSIVE`.
+  - Exported reusable variants: `fadeIn`, `fadeUp`, `panelTransition`, `staggerContainer`, and the `useReducedMotion` hook.
+  - Strictly respected `prefers-reduced-motion` in all components and templates.
+- **Magic UI & shadcn Component Primitives (`frontend/components/ui`)**:
+  - `AnimatedGridPattern`: Subtle SVG background grid with animated opacity squares.
+  - `ShimmerButton`: Polished primary CTA button with gentle sweep animation, accessible disabled states, and zero layout shift.
+  - `BorderBeam`: Refined running border beam with CSS variables (`--size`, `--duration`, `--delay`, `--color-from`, `--color-to`). Added `@keyframes border-beam` to `globals.css`.
+  - `NumberTicker`: Smooth number counter for metric and percentage animations with decimal place support.
+  - `EmptyState`: Clean dashed border card with icon, title, description, and primary/secondary action slot.
+  - `Skeleton`: Content placeholder with pulse animation.
+- **Landing Page Interactions (`/`)**:
+  - Integrated `AnimatedGridPattern` behind the hero section with gradient fade mask.
+  - Integrated `ShimmerButton` on the primary call-to-action ("Build My Portfolio").
+  - Built `LandingBuilderDemo` (`frontend/components/landing/landing-builder-demo.tsx`) using scoped `useGSAP()` timeline animating builder mockup interactions (typing headline, switching templates, updating metrics) with a static fallback when reduced motion is preferred.
+  - Built `Reveal` (`frontend/components/landing/reveal.tsx`) with Motion viewport entry transitions.
+  - Highlighted the featured template card with `BorderBeam`.
+  - Integrated `react-icons/fa6` brand icons (`FaGithub`, `FaLinkedin`, `FaXTwitter`) in the landing footer.
+- **Dashboard Microinteractions (`/dashboard`)**:
+  - Added `NumberTicker` on the completeness percentage and content item counters (projects, experience, education, skills).
+  - Integrated `EmptyState` component with `Sparkles` icon and direct builder CTA for accounts without a portfolio.
+  - Added subtle Motion hover lift on quick-action cards.
+- **Visual Builder Motion & Feedback (`/dashboard/builder`)**:
+  - Added smooth sliding `layoutId="activeSidebarIndicator"` on `BuilderSidebar` items.
+  - Added Motion transition on the topbar save status indicator (`Saved`, `Saving…`, `Unsaved changes`, `Save failed`).
+  - Added `AnimatePresence` and `motion.div` transitions to `BuilderSettingsPanel` when switching sidebar tabs.
+  - Added `AnimatePresence mode="popLayout"` and `motion.article layout` animations to `ContentManager` items for smooth addition, edit, and deletion.
+- **Template Gallery Interactions (`/templates` & Builder)**:
+  - Added animated category filter pill with `layoutId="activeTemplateCategoryIndicator"`.
+  - Added hover lift and scale animations to template cards (`whileHover={{ y: -2, scale: 1.01 }}`).
+  - Upgraded fullscreen preview modal device switcher with smooth width transition (`transition-[width] duration-300 ease-out`) between Desktop (100%), Tablet (768px), and Mobile (390px).
+  - Added subtle motion entry to template application confirmation notice.
+- **Portfolio Design Controls (Style & Sections Panels)**:
+  - Added Motion hover and tap states to style preset cards (`whileHover={{ scale: 1.02 }}`, `whileTap={{ scale: 0.98 }}`) with checkmark bounce.
+  - Added animated scale and ring pop to quick brand palette swatches.
+  - Added motion reveal to the contrast warning banner when color combinations fall below 4.5:1.
+  - Added Motion `layout` FLIP animations to section rows in `SectionsPanel` so clicking Up/Down smoothly slides rows into their new positions.
+- **Template-Specific Motion & Social Polish (`TemplateLayout`)**:
+  - Tailored motion personality across all 6 templates:
+    - Minimal: Quiet, subtle fade-in.
+    - Developer: Monospace tags with hover lift, code badges, terminal accents.
+    - Modern: Card hover lift (`whileHover={{ y: -3 }}`) and clean spacing.
+    - Professional: Structured timeline rules with pulse accent dots and dignified pace.
+    - Creative: Editorial display headings and project card hover scale.
+    - Student: Accessible interactive chips with vibrant hover scale.
+  - Integrated `react-icons/fa6` social icons in `SocialIcon` (`FaGithub`, `FaLinkedin`, `FaXTwitter`, `FaInstagram`, `FaYoutube`, `FaDiscord`, `FaDribbble`, `FaGlobe`) with standard sizing.
+  - Added `FaGithub` to project source code links across all templates.
+  - Added JSDOM `MockIntersectionObserver` in `frontend/test/setup.ts` to support Framer Motion viewport triggers in headless tests.
+- **Animated UI Regression Coverage**:
+  - Created `frontend/components/ui/motion-primitives.test.tsx` with 10 test cases verifying `AnimatedGridPattern`, `NumberTicker`, `ShimmerButton`, `BorderBeam`, `EmptyState`, `Skeleton`, and `lib/motion.ts` timing tokens and variants.
+
+## Verification
+
+| Check | Result |
+| --- | --- |
+| `frontend/npm run lint` | Passed — 0 errors and 0 warnings |
+| `frontend/npm run test` | Passed — 9 test files, 41 tests |
+| Clean `frontend/npm run build` | Passed — Next.js 15.5.25 (8/8 routes generated) |
+| `backend/./mvnw clean verify` | Passed — 43 tests, 0 failures, 0 errors, 0 skipped |
+| `docker compose config --quiet` | Passed |
+| Production Compose override config validation | Passed — expected unset-secret warnings without production environment values |
+| `docker compose build backend frontend` | Passed — both Docker images built successfully |
+
+## Commits Pushed to `origin/main`
+
+All commits created using git identity `Theoun SeyHa <theounseyha199@gmail.com>` and pushed to `origin main`:
+
+1. `85b8adf` — `add: add frontend motion foundation`
+2. `0b307b5` — `refactor: enhance landing page interactions`
+3. `5153208` — `refactor: polish dashboard microinteractions`
+4. `c9e9553` — `refactor: improve builder motion and feedback`
+5. `1c15669` — `refactor: enhance template gallery interactions`
+6. `54ef8fb` — `refactor: improve portfolio design controls`
+7. `cb10225` — `refactor: add template-specific motion polish`
+8. `b51f711` — `test: add animated ui regression coverage`
+
+
