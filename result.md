@@ -331,23 +331,88 @@ Backend coverage includes valid and invalid template validation, content
 preservation during template changes, controlled theme persistence, owned
 portfolio resolution, and section order/visibility/style persistence.
 
-## Runtime status and outstanding manual evidence
+## Authenticated workflow closure — 2026-09-14
 
-- The rebuilt verification containers are healthy on temporary host ports:
-  frontend `13000`, backend `18081`, Keycloak `8082`, and PostgreSQL `5434`.
-- A user-started Maven/Spring process (`PID 8054`) occupies host port `8081`.
-  It was intentionally not terminated. This prevented binding the rebuilt
-  Docker backend to the normal host port, so temporary verification ports were
-  used.
-- The real authenticated browser workflow remains pending. No login session or
-  real user credentials were available to verify template selection, reload
-  persistence, theme persistence, section changes, publishing, and the final
-  `/u/{slug}` result end to end.
-- Git delivery remains pending. The configured identity is
-  `Theoun SeyHa <theounseyha199@gmail.com>`, but neither the workspace `.git`
-  database nor the previously used `/tmp/portfolio-builder-git-meta` database
-  exists in this session. Consequently, no commits or pushes were claimed.
+- A normal Keycloak authorization-code login was verified. The supplied
+  personal account authenticates successfully but has no portfolio, so it was
+  left unchanged. The full mutation workflow used a dedicated verified
+  development account and content entered through the application's own forms
+  and APIs, not direct database writes or runtime mocks.
+- Real UI-created content covered Profile, Experience, Education, Skills,
+  Projects, and Social Links. Counts remained unchanged across template
+  switches; no records were duplicated or deleted.
+- All six templates, category metadata, current status, Preview, and Use
+  Template controls were verified. Creative preview used the authenticated
+  portfolio at Desktop, Tablet, and Mobile widths and did not persist after
+  closing or reloading.
+- Applying Developer displayed the content-preservation/default-style warning
+  and persisted after reload. Applying a different template predictably resets
+  style to that template's controlled defaults, matching the confirmation
+  copy.
+- Theme controls updated the preview locally. Unsaved changes did not survive
+  reload; saved primary color, font, and spacing did. Subsequent template
+  application reset them to the selected template defaults as documented.
+- Skills visibility, Projects `featured` layout, and reordered Projects-before-
+  Experience position persisted after reload. Hero was disabled in the UI,
+  labeled as required, and always remained enabled. Only layouts declared by
+  the selected template were offered.
+- Publish and unpublish were verified. The unpublished slug returned the
+  not-found state without content; after republishing, `/u/{slug}` used the
+  saved template, theme, section order, visibility, layout, and real content.
+  Minimal, Developer, Professional, and Creative were each confirmed on the
+  public route.
+- Empty About, Resume, and disabled Skills sections did not render headings,
+  CTAs, or empty regions publicly.
+- `/templates` returned successfully with six thumbnail cards and on-demand
+  full previews. The landing-page `View Templates` CTA was browser-tested and
+  corrected to remain reliable before client hydration.
+- At 390 px, the builder exposed every Content, Import, Design, and Settings
+  panel through accessible mobile navigation; template preview/application,
+  Style, Sections, and Publish remained reachable without horizontal overflow.
+- Accessibility review confirmed labeled controls, semantic dialogs, visible
+  focus styling, device-button labels, keyboard-usable template controls, and
+  the required-Hero explanation. Save feedback is now exposed through a live
+  status region.
+- Read-only PostgreSQL verification confirmed `developer`, `published=true`,
+  controlled Developer theme defaults, Projects at position 3 with
+  `layout=featured`, Experience at position 4, and Skills disabled.
+- Temporary Keycloak bootstrap service clients used to provision the isolated
+  development account were removed after verification. No credential was
+  written to the repository.
 
-The implementation and automated verification are complete. The milestone is
-not marked fully complete until the authenticated workflow is exercised and
-Git metadata is restored for the requested logical commits and pushes.
+## Defects fixed during real workflow verification
+
+- Flushed section deletion before reinsertion to prevent the portfolio/section
+  unique constraint from rejecting legitimate visibility, order, and layout
+  saves in the same transaction.
+- Normalized project technologies to the backend array contract.
+- Reloaded portfolio preview data immediately after initial profile creation
+  and profile saves.
+- Added builder-wide save/error status feedback and explicit section-save
+  confirmation.
+- Added usable mobile builder panel navigation and mandatory-Hero explanation.
+- Made the landing template CTA resilient to incomplete client hydration.
+
+## Final verification
+
+| Check | Result |
+| --- | --- |
+| Real Keycloak login and authenticated portfolio workflow | Passed |
+| Preview non-persistence and template persistence | Passed |
+| Content preservation | Passed |
+| Theme local preview/save/reload | Passed |
+| Section visibility/order/layout reload | Passed |
+| Publish, unpublish privacy, and public cross-template rendering | Passed |
+| Mobile 390 px builder workflow | Passed |
+| `backend/./mvnw clean verify` | Passed — 43 tests, 0 failures, 0 errors, 0 skipped |
+| `frontend/npm run lint` | Passed — 0 errors and 0 warnings |
+| `frontend/npm run test` | Passed — 8 files, 28 tests |
+| Clean `frontend/npm run build` | Passed — Next.js 15.5.25 |
+| Development and production Compose config | Passed; expected unset production-secret warnings only |
+| `docker compose build backend frontend` | Passed |
+
+The Portfolio Template System milestone is complete. Remaining broader project
+limitations are outside this milestone: the supplied personal account still
+needs a portfolio created before it can use the builder, production deployment
+secrets must be supplied externally, and the existing dependency/JVM warnings
+documented above remain scheduled hardening work.
