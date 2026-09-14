@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 class TemplateValidationTest {
   private final jakarta.validation.Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-  private final ThemeConfig theme = new ThemeConfig("#20419E", "#FFFFFF", "#111827", "#667085", "Inter", "light", "medium", "grid", "medium");
+  private final ThemeConfig theme = new ThemeConfig("#20419E", "#FFFFFF", "#F4F6FA", "#111827", "#667085", "geist", "inter", "light", "medium", "medium", "normal");
 
   @Test
   void acceptsEveryRegisteredTemplateIdentifier() {
