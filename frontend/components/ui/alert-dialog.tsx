@@ -126,10 +126,12 @@ export function AlertDialogFooter({
 export function AlertDialogCancel({
   children,
   className,
+  disabled,
   onClick,
 }: {
   children: ReactNode;
   className?: string;
+  disabled?: boolean;
   onClick?: () => void;
 }) {
   const { setOpen } = useContext(DialogContext);
@@ -137,6 +139,7 @@ export function AlertDialogCancel({
     <Button
       variant="secondary"
       className={className}
+      disabled={disabled}
       onClick={() => {
         onClick?.();
         setOpen(false);
@@ -150,11 +153,13 @@ export function AlertDialogCancel({
 export function AlertDialogAction({
   children,
   className,
+  disabled,
   variant = "primary",
   onClick,
 }: {
   children: ReactNode;
   className?: string;
+  disabled?: boolean;
   variant?: "primary" | "destructive";
   onClick?: () => void;
 }) {
@@ -163,6 +168,7 @@ export function AlertDialogAction({
     <Button
       variant={variant}
       className={className}
+      disabled={disabled}
       onClick={() => {
         onClick?.();
         setOpen(false);
