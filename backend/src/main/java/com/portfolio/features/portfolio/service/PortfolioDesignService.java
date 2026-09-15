@@ -15,7 +15,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -141,12 +143,31 @@ public class PortfolioDesignService {
 
   @Transactional(readOnly = true)
   public List<SectionResponse> get(AppUser user) {
-    return responses(sections.findByPortfolioIdOrderByPositionAsc(access.mine(user).getId()));
+    var portfolio = access.mine(user);
+    return responses(sections.findByPortfolioIdOrderByPositionAsc(portfolio.getId()), portfolio.getTemplateKey());
   }
 
-  public List<SectionResponse> responses(List<PortfolioSection> saved) {
-    if (saved.isEmpty()) return defaults();
-    return saved.stream().map(this::response).toList();
+  public List<SectionResponse> responses(List<PortfolioSection> saved, String templateKey) {
+    var order = defaultSectionOrderFor(templateKey);
+    if (saved.isEmpty()) return defaults(templateKey);
+    if (saved.size() == order.size()
+        && saved.stream().map(PortfolioSection::getSectionType).collect(java.util.stream.Collectors.toSet()).containsAll(order)) {
+      return saved.stream().map(this::response).toList();
+    }
+
+    // Older portfolios can have only a subset of section rows. Treat missing
+    // rows as the template defaults instead of hiding their content.
+    Map<String, PortfolioSection> byType = saved.stream().collect(
+        java.util.stream.Collectors.toMap(PortfolioSection::getSectionType, Function.identity(), (first, ignored) -> first));
+    var output = new ArrayList<SectionResponse>();
+    for (int i = 0; i < order.size(); i++) {
+      var existing = byType.get(order.get(i));
+      output.add(existing == null
+          ? defaultResponse(order.get(i), i + 1)
+          : new SectionResponse(existing.getSectionType(), i + 1, existing.isEnabled(), existing.getLayout(),
+              existing.getAlignment(), existing.getBackground(), existing.getSpacing()));
+    }
+    return output;
   }
 
   private SectionResponse response(PortfolioSection section) {
@@ -161,11 +182,16 @@ public class PortfolioDesignService {
     );
   }
 
-  private List<SectionResponse> defaults() {
+  private List<SectionResponse> defaults(String templateKey) {
     var output = new ArrayList<SectionResponse>();
-    for (int i = 0; i < DEFAULT.size(); i++) {
-      output.add(new SectionResponse(DEFAULT.get(i), i + 1, true, null, "left", "default", "normal"));
+    var order = defaultSectionOrderFor(templateKey);
+    for (int i = 0; i < order.size(); i++) {
+      output.add(defaultResponse(order.get(i), i + 1));
     }
     return output;
+  }
+
+  private SectionResponse defaultResponse(String sectionType, int position) {
+    return new SectionResponse(sectionType, position, true, null, "left", "default", "normal");
   }
 }
