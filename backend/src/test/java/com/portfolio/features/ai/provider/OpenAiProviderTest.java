@@ -35,7 +35,7 @@ class OpenAiProviderTest {
     } finally { server.stop(0); }
   }
   @Test void disabledWithoutKey() {
-    assertThatThrownBy(() -> new OpenAiProvider(new AiConfiguration("openai", "", "", 15, 5000), new ObjectMapper()).generate("private", "text")).isInstanceOf(AiWritingException.class).hasMessage("AI writing assistance is currently unavailable.");
+    assertThatThrownBy(() -> new OpenAiProvider(new AiConfiguration("openai", "", "", 15, 5000), new ObjectMapper()).generate("private", "text")).isInstanceOf(AiWritingException.class).hasMessage("AI is not configured. Set AI_PROVIDER, AI_API_KEY, and AI_MODEL, then restart the backend.");
   }
   @Test void sendsBoundedPrivateRequestAndParsesText() throws Exception {
     var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);

@@ -20,5 +20,5 @@ public class AiConfiguration {
     this.timeoutSeconds = Math.clamp(timeoutSeconds, 1, 20);
     this.maxInputLength = Math.clamp(maxInputLength, 5, 5000);
   }
-  public boolean available() { return provider.equals("openai") && !apiKey.isBlank() && !model.isBlank(); }
+  public boolean available() { return (provider.equals("openai") || provider.equals("gemini")) && !apiKey.isBlank() && !model.isBlank(); }
 }

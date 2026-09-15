@@ -8,8 +8,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 @Component
+@ConditionalOnProperty(name = "ai.provider", havingValue = "openai", matchIfMissing = true)
 public class OpenAiProvider implements AiProvider {
   private final AiConfiguration config;
   private final ObjectMapper json;
@@ -28,7 +30,7 @@ public class OpenAiProvider implements AiProvider {
   }
 
   @Override public String generate(String instructions, String text) {
-    if (!config.available()) throw new AiWritingException(false);
+    if (!config.available()) throw new AiWritingException("AI is not configured. Set AI_PROVIDER, AI_API_KEY, and AI_MODEL, then restart the backend.");
     try {
       var body = json.writeValueAsString(Map.of("model", config.getModel(), "instructions", instructions,
           "input", text, "store", false, "max_output_tokens", 2200));
@@ -36,7 +38,7 @@ public class OpenAiProvider implements AiProvider {
           .header("Authorization", "Bearer " + config.getApiKey()).header("Content-Type", "application/json")
           .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8)).build();
       var response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-      if (response.statusCode() != 200 || response.body().length() > 100000) throw new AiWritingException(false);
+      if (response.statusCode() != 200 || response.body().length() > 100000) throw unavailable(response.statusCode());
       var root = json.readTree(response.body());
       if (!root.path("status").asText().equals("completed") || !root.path("error").isMissingNode() && !root.path("error").isNull()) throw new AiWritingException(false);
       var output = new StringBuilder();
@@ -51,5 +53,13 @@ public class OpenAiProvider implements AiProvider {
     } catch (HttpTimeoutException e) { throw new AiWritingException(true);
     } catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new AiWritingException(false);
     } catch (Exception e) { throw new AiWritingException(false); }
+  }
+  private AiWritingException unavailable(int status) {
+    return switch (status) {
+      case 401 -> new AiWritingException("OpenAI rejected the configured API key.");
+      case 429 -> new AiWritingException("OpenAI rate limit or billing limit reached. Check the OpenAI project usage and billing settings.");
+      case 400, 404 -> new AiWritingException("OpenAI rejected the configured model. Check AI_MODEL.");
+      default -> new AiWritingException("OpenAI service returned HTTP " + status + ". Please try again shortly.");
+    };
   }
 }

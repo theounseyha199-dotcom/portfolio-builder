@@ -6,5 +6,6 @@ public class AiWritingException extends RuntimeException {
     super(timeout ? "AI request timed out. Please try again." : "AI writing assistance is currently unavailable.");
     this.timeout = timeout;
   }
+  public AiWritingException(String message) { super(message); this.timeout = false; }
   public boolean isTimeout() { return timeout; }
 }

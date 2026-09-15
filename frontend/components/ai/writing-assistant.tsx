@@ -40,7 +40,13 @@ export function WritingAssistant({ target, text, onAccept }: {
     try {
       const response = await request.unwrap();
       if (generation.current !== current) return;
-      setSuggestion({ original, edited: response.data.suggestedText }); setEditing(false); setMenu(false);
+      const edited = response.data.suggestedText;
+      if (edited.trim() === original.trim()) {
+        setError("No changes recommended. Your text is already clear enough, or AI could not safely improve it.");
+        setMenu(false);
+        return;
+      }
+      setSuggestion({ original, edited }); setEditing(false); setMenu(false);
     } catch {
       if (generation.current === current) setError("AI writing assistance is currently unavailable. Your text has not changed. Please try again later.");
     } finally { if (generation.current === current) pending.current = null; }

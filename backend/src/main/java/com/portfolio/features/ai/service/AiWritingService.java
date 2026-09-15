@@ -20,6 +20,9 @@ public class AiWritingService {
       Never add employers, titles, seniority, responsibilities, achievements, dates, clients,
       certifications, degrees, team sizes, revenue, metrics, percentages, users, or outcomes.
       Maintain the original meaning and language. No fake impact or corporate buzzwords.
+      Correct spelling, punctuation, grammar, and obvious typing mistakes whenever they appear.
+      Make the smallest useful rewrite that improves readability; do not repeat the input unchanged
+      when a clear correction can be made.
       If there is insufficient material, return the original text unchanged.
       Return only the improved plain text, without HTML, Markdown fences, commentary, or JSON.
       """;
@@ -45,7 +48,7 @@ public class AiWritingService {
 
   String prompt(AiWritingRequest request) {
     String target = switch (request.target()) {
-      case PROFILE_BIO -> "Write a clear, human, confident bio without changing seniority.";
+      case PROFILE_BIO -> "Write a clear, human, confident bio without changing seniority. Fix all obvious spelling and grammar errors.";
       case EXPERIENCE_DESCRIPTION -> "Clarify only the role, work, and impact actually described.";
       case PROJECT_DESCRIPTION -> "Clarify the project purpose, technical work, and supplied outcomes. Never add technologies.";
     };
@@ -53,7 +56,7 @@ public class AiWritingService {
       case IMPROVE -> "Improve clarity and flow.";
       case PROFESSIONAL -> "Use a natural professional tone.";
       case CONCISE -> "Shorten wording while retaining factual details.";
-      case FIX_GRAMMAR -> "Correct grammar only, with minimal wording changes.";
+      case FIX_GRAMMAR -> "Correct spelling, punctuation, and grammar only, with minimal wording changes.";
       case HIGHLIGHT_IMPACT -> request.target() == AiWritingTarget.PROJECT_DESCRIPTION
           ? "Highlight only the technical work already described." : "Highlight supplied impact; do not infer missing outcomes.";
     };
