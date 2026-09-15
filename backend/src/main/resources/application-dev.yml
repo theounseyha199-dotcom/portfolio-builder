@@ -22,7 +22,6 @@ app:
   storage:
     type: ${STORAGE_TYPE:local}
     local-path: ${STORAGE_LOCAL_PATH:./storage}
-    public-base-url: ${APP_PUBLIC_BASE_URL:http://localhost:8081}
     max-image-size: ${STORAGE_MAX_IMAGE_SIZE:5242880}
     max-project-image-size: ${STORAGE_MAX_PROJECT_IMAGE_SIZE:8388608}
     max-resume-size: ${STORAGE_MAX_RESUME_SIZE:5242880}
@@ -32,4 +31,3 @@ app:
       access-key: ${S3_ACCESS_KEY:}
       secret-key: ${S3_SECRET_KEY:}
       bucket: ${S3_BUCKET:}
-      public-base-url: ${S3_PUBLIC_BASE_URL:}
