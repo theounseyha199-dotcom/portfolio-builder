@@ -29,9 +29,11 @@ Copy the sample and replace all development defaults before sharing or deploying
 
 ```bash
 cp .env.example .env
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
 ```
 
-Key variables: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KEYCLOAK_ADMIN_PASSWORD`, `APP_ENCRYPTION_KEY`, service ports, and the `NEXT_PUBLIC_*` Keycloak/API URLs. `.env` is ignored by Git. Generate the encryption key with `openssl rand -base64 32`; it must decode to exactly 32 bytes.
+`.env` contains only Docker infrastructure settings. `backend/.env` contains backend secrets and integrations, while `frontend/.env` contains the public browser URLs plus the server-only `BACKEND_INTERNAL_URL`. All three files are ignored by Git. Generate the backend encryption key with `openssl rand -base64 32`; it must decode to exactly 32 bytes.
 
 ## Run with Docker
 
@@ -89,10 +91,13 @@ Never log GitHub tokens, authorization headers, or encryption keys. Production s
 `docker-compose.yml` is development-oriented and runs Keycloak with `start-dev`. Production must use the override and an external TLS reverse proxy:
 
 ```bash
+cp .env.production.example .env.production
+cp backend/.env.production.example backend/.env.production
+cp frontend/.env.production.example frontend/.env.production
 docker compose --env-file .env.production -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-Copy `.env.production.example` to a secure deployment secret source first. The production profile requires database credentials, issuer URL, CORS/public URLs, `APP_ENCRYPTION_KEY`, S3 credentials, and GitHub OAuth secrets without development defaults. Keycloak uses `start`, hostname configuration, and proxy headers; terminate TLS at the reverse proxy and do not expose PostgreSQL directly. Pin production images to immutable digests as part of release management.
+Keep infrastructure values in `.env.production`, backend secrets in `backend/.env.production`, and frontend values in `frontend/.env.production`. The production profile requires database credentials, issuer URL, CORS/public URLs, `APP_ENCRYPTION_KEY`, S3 credentials, and GitHub OAuth secrets without development defaults. Keycloak uses `start`, hostname configuration, and proxy headers; terminate TLS at the reverse proxy and do not expose PostgreSQL directly. Pin production images to immutable digests as part of release management.
 
 ## API overview
 
