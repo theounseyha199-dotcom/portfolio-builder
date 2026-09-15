@@ -31,8 +31,7 @@ public class LocalStorageService implements StorageService {
     try { Files.deleteIfExists(resolve(key)); } catch (IOException ignored) { }
   }
   public String getPublicUrl(String key) {
-    String base = props.getPublicBaseUrl() == null ? "" : props.getPublicBaseUrl().replaceAll("/+$", "");
-    return base + "/api/public/assets/" + key;
+    return PublicAssetUrl.forKey(key);
   }
   public java.io.InputStream open(String key) { try { return Files.newInputStream(resolve(key)); } catch (IOException exception) { throw new IllegalArgumentException("Resume file is unavailable."); } }
   private Path root() { return Paths.get(props.getLocalPath()).toAbsolutePath().normalize(); }

@@ -9,7 +9,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class StorageProperties {
   private String type = "local";
   private String localPath = "./storage";
-  private String publicBaseUrl = "";
   private long maxImageSize = 5_242_880;
   private long maxProjectImageSize = 8_388_608;
   private long maxResumeSize = 5_242_880;
@@ -22,6 +21,5 @@ public class StorageProperties {
     private String accessKey;
     private String secretKey;
     private String bucket;
-    private String publicBaseUrl;
   }
 }

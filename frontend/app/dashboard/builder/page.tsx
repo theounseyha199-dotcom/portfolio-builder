@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { WritingAssistant } from "@/components/ai/writing-assistant";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
@@ -17,6 +16,7 @@ import { BuilderSettingsPanel } from "@/components/builder/builder-settings-pane
 import { BuilderMobileNavigation, BuilderSidebar, parsePanelQuery, type BuilderPanel } from "@/components/builder/builder-sidebar";
 import { BuilderTopbar, type SaveState } from "@/components/builder/builder-topbar";
 import { ContentManager } from "@/components/builder/content-manager";
+import { ProfileAvatar } from "@/components/portfolio/profile-avatar";
 import { GitHubImportPanel } from "@/components/builder/github-import-panel";
 import { ResumeImportPanel } from "@/components/builder/resume-import-panel";
 import { TemplateGallery } from "@/components/builder/template-gallery";
@@ -314,12 +314,6 @@ function BuilderContent() {
     );
   }
 
-  const initials = (form.fullName || "?")
-    .split(" ")
-    .map((x) => x[0])
-    .join("")
-    .slice(0, 2);
-
   return (
     <main className="min-h-screen bg-slate-100/70 flex flex-col">
       {/* Topbar */}
@@ -438,17 +432,8 @@ function BuilderContent() {
                 {/* Photo Upload Row */}
                 <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-slate-50/70 p-4">
                   <div className="flex size-16 items-center justify-center overflow-hidden rounded-full bg-primary/10 font-bold text-primary text-base shadow-xs shrink-0 border border-primary/20">
-                    {portfolio?.profileImageUrl ? (
-                      <Image
-                        src={portfolio.profileImageUrl}
-                        alt="Profile photo"
-                        width={64}
-                        height={64}
-                        className="size-full object-cover"
-                      />
-                    ) : (
-                      initials
-                    )}
+                    <ProfileAvatar src={portfolio?.profileImageUrl} name={form.fullName || "Profile"} width={64} height={64}
+                      className="size-full object-cover" fallbackClassName="flex size-full items-center justify-center" />
                   </div>
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <p className="text-xs font-bold text-slate-900">

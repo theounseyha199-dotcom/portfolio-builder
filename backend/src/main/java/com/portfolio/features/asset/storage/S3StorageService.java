@@ -29,9 +29,7 @@ public class S3StorageService implements StorageService {
   }
   public void delete(String key) { try { client.deleteObject(DeleteObjectRequest.builder().bucket(props.getS3().getBucket()).key(key).build()); } catch (RuntimeException ignored) { } }
   public String getPublicUrl(String key) {
-    String base = props.getS3().getPublicBaseUrl();
-    if (base == null || base.isBlank()) throw new IllegalStateException("S3_PUBLIC_BASE_URL must be configured for public assets.");
-    return base.replaceAll("/+$", "") + "/" + key;
+    return PublicAssetUrl.forKey(key);
   }
   public java.io.InputStream open(String key) { try { return client.getObject(GetObjectRequest.builder().bucket(props.getS3().getBucket()).key(key).build()); } catch (RuntimeException exception) { throw new IllegalArgumentException("Resume file is unavailable."); } }
   private String extension(String contentType) { return switch (contentType) { case "image/jpeg" -> ".jpg"; case "image/png" -> ".png"; case "image/webp" -> ".webp"; case "application/pdf" -> ".pdf"; default -> ""; }; }

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { ProfileAvatar } from "@/components/portfolio/profile-avatar";
 import {
   Calendar,
   ExternalLink,
@@ -155,15 +156,9 @@ export function TemplateLayout({
             className="flex items-center gap-2.5 text-base font-bold tracking-tight hover:opacity-80 transition-opacity"
             style={{ fontFamily: "var(--portfolio-font-heading)" }}
           >
-            {portfolio.profileImageUrl && (
-              <Image
-                src={portfolio.profileImageUrl}
-                alt={portfolio.fullName}
-                width={32}
-                height={32}
-                className="size-7 rounded-full object-cover border border-current/15"
-              />
-            )}
+            <ProfileAvatar src={portfolio.profileImageUrl} name={portfolio.fullName} width={32} height={32}
+              className="size-7 rounded-full object-cover border border-current/15"
+              fallbackClassName="flex size-7 items-center justify-center rounded-full border border-current/15 text-[10px]" />
             <span>{portfolio.fullName}</span>
           </a>
 
@@ -338,23 +333,12 @@ function TemplateSection({
             : undefined
         }
       >
-        {portfolio.profileImageUrl && (
-          <div className="shrink-0">
-            <Image
-              src={portfolio.profileImageUrl}
-              alt={`${portfolio.fullName} profile photo`}
-              width={variant === "creative" ? 420 : 144}
-              height={variant === "creative" ? 520 : 144}
-              sizes="(max-width: 640px) 100vw, 420px"
-              priority
-              className={`${
-                variant === "creative"
-                  ? "aspect-[4/5] w-full"
-                  : "size-28 sm:size-36"
-              } rounded-[var(--portfolio-radius)] object-cover shadow-sm border border-current/10`}
-            />
-          </div>
-        )}
+        <div className="shrink-0">
+          <ProfileAvatar src={portfolio.profileImageUrl} name={portfolio.fullName}
+            width={variant === "creative" ? 420 : 144} height={variant === "creative" ? 520 : 144}
+            className={`${variant === "creative" ? "aspect-[4/5] w-full" : "size-28 sm:size-36"} rounded-[var(--portfolio-radius)] object-cover shadow-sm border border-current/10`}
+            fallbackClassName={`${variant === "creative" ? "aspect-[4/5] w-full" : "size-28 sm:size-36"} flex items-center justify-center rounded-[var(--portfolio-radius)] border border-current/10 text-2xl`} />
+        </div>
         <div className={variant === "modern" ? "mx-auto max-w-2xl" : ""}>
           <div className="mb-3 flex flex-wrap items-center gap-2">
             {portfolio.location && (

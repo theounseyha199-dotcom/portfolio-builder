@@ -128,9 +128,9 @@ The builder supports JPEG, PNG, and WebP profile/project images. Profile images 
 
 For local development, set `STORAGE_TYPE=local`. Files are held below `STORAGE_LOCAL_PATH` in generated paths such as `portfolios/{portfolio-id}/profile`, `projects`, and `resume`, and served only through `/api/public/assets/...`. In Docker the `backend_storage` volume is mounted at `/app/storage`.
 
-For production, do not rely on local container storage. Set `STORAGE_TYPE=s3` and configure `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, and `S3_PUBLIC_BASE_URL`. `S3_ENDPOINT` is optional for AWS S3 and should be set for Cloudflare R2 or MinIO-compatible storage. `S3_PUBLIC_BASE_URL` must be a public CDN/bucket origin and contains no credentials.
+For production, do not rely on local container storage. Set `STORAGE_TYPE=s3` and configure `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY`, and `S3_SECRET_KEY`. `S3_ENDPOINT` is optional for AWS S3 and should be set for Cloudflare R2 or MinIO-compatible storage. Assets still use the application-relative public URL contract.
 
-`APP_PUBLIC_BASE_URL` determines the public origin for local asset URLs (default: `http://localhost:8081`).
+Public asset URLs are environment-independent paths such as `/api/public/assets/portfolios/{id}/profile/{file}.jpg`. The Next.js server proxies these paths to `BACKEND_INTERNAL_URL`; set it to `http://localhost:8081` for host development and `http://backend:8081` in Compose. Do not persist an API hostname with an asset URL.
 
 ## GitHub integration
 

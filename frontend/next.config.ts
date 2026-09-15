@@ -1,4 +1,11 @@
 import type { NextConfig } from "next";
-const assetOrigin = process.env.NEXT_PUBLIC_ASSET_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8081";
-const nextConfig: NextConfig = { output: "standalone", images: { remotePatterns: [new URL(assetOrigin + "/**")] } };
+const backendInternalUrl = process.env.BACKEND_INTERNAL_URL ?? "http://localhost:8081";
+
+const nextConfig: NextConfig = {
+  output: "standalone",
+  async rewrites() {
+    return [{ source: "/api/public/assets/:path*", destination: `${backendInternalUrl}/api/public/assets/:path*` }];
+  },
+};
+
 export default nextConfig;
