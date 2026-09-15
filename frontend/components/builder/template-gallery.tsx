@@ -324,6 +324,37 @@ function TemplateThumbnail({ template }: { template: TemplateId }) {
   const definition = portfolioTemplateRegistry[template];
   const isDark = definition.defaultTheme.mode === "dark";
 
+  if (template === "minimal") {
+    return (
+      <div aria-hidden="true" className="h-40 border-b bg-[#e9e6dd] p-3 text-[#171717]">
+        <div className="mx-auto flex h-full max-w-xs flex-col overflow-hidden border border-black/10 bg-[#fcfbf8] px-3 py-2.5 shadow-sm transition-transform group-hover:scale-[1.01]">
+          <div className="flex items-center justify-between border-b border-black/10 pb-1.5 text-[8px] font-semibold uppercase tracking-[0.14em]">
+            <span>Selected work</span>
+            <span className="opacity-55">Minimal</span>
+          </div>
+          <div className="flex flex-1 items-center justify-between gap-3 py-2">
+            <div className="min-w-0">
+              <p className="font-serif text-lg leading-[0.9] tracking-tight">A calm place<br />for great work.</p>
+              <div className="mt-2 h-1 w-16 bg-black/70" />
+              <div className="mt-1.5 h-1 w-11 bg-black/15" />
+            </div>
+            <div className="grid size-14 shrink-0 grid-cols-2 gap-1 bg-[#d4cbbb] p-1">
+              <span className="bg-[#b2a48f]" />
+              <span className="bg-[#797f76]" />
+              <span className="bg-[#e6ded0]" />
+              <span className="bg-[#343b38]" />
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 border-t border-black/10 pt-1.5">
+            <span className="size-1.5 rounded-full bg-[#1f2933]" />
+            <span className="h-1 w-14 bg-black/15" />
+            <span className="ml-auto text-[7px] uppercase tracking-[0.12em] opacity-55">Portfolio</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       aria-hidden="true"
