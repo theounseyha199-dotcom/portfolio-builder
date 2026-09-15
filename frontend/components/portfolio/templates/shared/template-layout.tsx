@@ -142,15 +142,21 @@ export function TemplateLayout({
 
   return (
     <main
-      className={`portfolio-${variant} min-h-screen overflow-x-hidden bg-[var(--portfolio-background)] text-[var(--portfolio-text)]`}
+      className={`portfolio-${variant} min-h-screen overflow-x-hidden bg-[var(--portfolio-background)] text-[var(--portfolio-text)] ${
+        variant === "minimal" ? "selection:bg-[var(--portfolio-primary)]/15" : ""
+      }`}
       style={{ fontFamily: "var(--portfolio-font-body)" }}
     >
       {/* Sticky Header with Navigation */}
       <nav
         aria-label="Portfolio sections"
-        className="sticky top-0 z-40 border-b border-current/10 bg-[var(--portfolio-background)]/90 backdrop-blur-md transition-colors"
+        className={`sticky top-0 z-40 border-b border-current/10 bg-[var(--portfolio-background)]/90 backdrop-blur-md transition-colors ${
+          variant === "minimal" ? "shadow-[0_1px_0_rgba(15,23,42,0.02)]" : ""
+        }`}
       >
-        <div className="mx-auto flex max-w-[var(--portfolio-content-width)] items-center justify-between gap-4 px-5 py-3.5 sm:px-8">
+        <div className={`mx-auto flex max-w-[var(--portfolio-content-width)] items-center justify-between gap-4 px-5 sm:px-8 ${
+          variant === "minimal" ? "py-4" : "py-3.5"
+        }`}>
           <a
             href="#portfolio-hero"
             className="flex items-center gap-2.5 text-base font-bold tracking-tight hover:opacity-80 transition-opacity"
@@ -232,7 +238,9 @@ export function TemplateLayout({
       </nav>
 
       {/* Main Content Area */}
-      <div className="mx-auto max-w-[var(--portfolio-content-width)] px-5 py-8 sm:px-8">
+      <div className={`mx-auto max-w-[var(--portfolio-content-width)] px-5 sm:px-8 ${
+        variant === "minimal" ? "py-4 sm:py-6" : "py-8"
+      }`}>
         {ordered.map((section) => (
           <TemplateSection
             key={section.sectionType}
@@ -286,16 +294,18 @@ function TemplateSection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="scroll-mt-20 py-[calc(var(--portfolio-section-gap)/2)]"
+      className={`scroll-mt-20 py-[calc(var(--portfolio-section-gap)/2)] ${
+        variant === "minimal" ? "border-t border-current/10 first:border-t-0" : ""
+      }`}
     >
-      <div className="mb-6 flex items-center gap-3">
+      <div className={`mb-6 flex items-center gap-3 ${variant === "minimal" ? "pt-1" : ""}`}>
         <h2
           id={`${type.toLowerCase()}-heading`}
           className={`${
             variant === "creative"
               ? "text-3xl sm:text-4xl"
               : variant === "minimal"
-              ? "text-xl sm:text-2xl font-semibold tracking-tight"
+              ? "text-xs font-bold uppercase tracking-[0.16em] text-[var(--portfolio-muted)]"
               : "text-2xl sm:text-3xl font-bold"
           }`}
           style={{ fontFamily: "var(--portfolio-font-heading)" }}
@@ -325,6 +335,8 @@ function TemplateSection({
             ? "grid items-center gap-8 sm:grid-cols-[1fr_1.4fr]"
             : variant === "developer"
             ? "border-l-4 pl-6"
+            : variant === "minimal"
+            ? "grid gap-8 border-b border-current/10 py-14 sm:grid-cols-[auto_1fr] sm:items-center sm:py-20"
             : "flex flex-col gap-7 sm:flex-row sm:items-center"
         }`}
         style={
@@ -336,8 +348,8 @@ function TemplateSection({
         <div className="shrink-0">
           <ProfileAvatar src={portfolio.profileImageUrl} name={portfolio.fullName}
             width={variant === "creative" ? 420 : 144} height={variant === "creative" ? 520 : 144}
-            className={`${variant === "creative" ? "aspect-[4/5] w-full" : "size-28 sm:size-36"} rounded-[var(--portfolio-radius)] object-cover shadow-sm border border-current/10`}
-            fallbackClassName={`${variant === "creative" ? "aspect-[4/5] w-full" : "size-28 sm:size-36"} flex items-center justify-center rounded-[var(--portfolio-radius)] border border-current/10 text-2xl`} />
+            className={`${variant === "creative" ? "aspect-[4/5] w-full" : variant === "minimal" ? "size-24 sm:size-32" : "size-28 sm:size-36"} rounded-[var(--portfolio-radius)] object-cover shadow-sm border border-current/10`}
+            fallbackClassName={`${variant === "creative" ? "aspect-[4/5] w-full" : variant === "minimal" ? "size-24 sm:size-32" : "size-28 sm:size-36"} flex items-center justify-center rounded-[var(--portfolio-radius)] border border-current/10 text-2xl`} />
         </div>
         <div className={variant === "modern" ? "mx-auto max-w-2xl" : ""}>
           <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -358,7 +370,7 @@ function TemplateSection({
               variant === "creative"
                 ? "text-5xl sm:text-7xl"
                 : variant === "minimal"
-                ? "text-3xl sm:text-5xl font-semibold tracking-tight"
+                ? "text-4xl sm:text-6xl font-semibold tracking-[-0.045em]"
                 : "text-4xl sm:text-6xl font-bold"
             } leading-[1.05] tracking-tight`}
             style={{ fontFamily: "var(--portfolio-font-heading)" }}
@@ -422,6 +434,8 @@ function TemplateSection({
             ? "grid gap-4 md:grid-cols-2"
             : variant === "professional"
             ? "relative border-l-2 border-current/15 ml-3 pl-6 space-y-8"
+            : variant === "minimal"
+            ? "divide-y divide-current/10"
             : "space-y-6"
         }
       >
@@ -439,7 +453,7 @@ function TemplateSection({
                 variant === "modern"
                   ? `${card} p-5`
                   : variant === "minimal"
-                  ? "border-b border-current/10 pb-5 last:border-b-0"
+                  ? "py-5 first:pt-0 last:pb-0"
                   : ""
               }`}
             >
